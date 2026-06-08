@@ -1047,7 +1047,7 @@ function equipItem(item, effects) {
   updateHoverBar(); saveBuild()
 }
 
-async async function handleEquip(id, itemBasic) {
+async function handleEquip(id, itemBasic) {
   const ex = Object.entries(build).find(([,v])=>v?.ankama_id===id)
   if (ex) { unequip(null, ex[0]); return }
   if (statsCache[id]) { equipItem(itemBasic, statsCache[id]); return }
@@ -1127,7 +1127,7 @@ function renderGrid() {
   document.getElementById('plus-wrap').style.display=(appState.hasMore&&!appState.isSearch)?'block':'none'
 }
 
-async async function fetchItems(page=1, append=false) {
+async function fetchItems(page=1, append=false) {
   appState.loading=true; appState.isMountMode=false
   if(!append){document.getElementById('st-load').style.display='block';document.getElementById('st-ok').style.display='none'}
   try {
@@ -1139,7 +1139,7 @@ async async function fetchItems(page=1, append=false) {
   appState.loading=false
 }
 
-async async function fetchSearch(q) {
+async function fetchSearch(q) {
   appState.loading=true; appState.isMountMode=false
   document.getElementById('st-load').style.display='block'; document.getElementById('st-ok').style.display='none'
   try {const r=await fetch(`${API_EQ}/search?query=${encodeURIComponent(q)}&limit=40`); allItems=await r.json()||[]; appState.hasMore=false; appState.isSearch=true; renderGrid()}
@@ -1150,7 +1150,7 @@ async async function fetchSearch(q) {
 // ─── Grid MONTURES ────────────────────────────────────────────────────────────
 let mpg = {items:[], page:1, hasMore:true, loading:false}
 
-async async function fetchMountsForGrid(append=false) {
+async function fetchMountsForGrid(append=false) {
   appState.isMountMode=true; appState.loading=true
   if(!append){document.getElementById('st-load').style.display='block';document.getElementById('st-ok').style.display='none';mountItems=[];mpg={items:[],page:1,hasMore:true,loading:false}}
   try {
