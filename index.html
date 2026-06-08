@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Dofus Stuff Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#f4c95d;--gold-d:#c9992a;
+  --bg:#080e16;--bg2:#0f1922;--bg3:#142030;--bg4:#0b1420;
+  --border:#1a2d3e;--border2:#253d56;
+  --text:#cfc0a4;--dim:#5a7080;
+  --green:#52c452;--red:#d96060;--blue:#4fa8c2;--purple:#8a70d8;
+  --cls:#c9992a;--cls2:#2a5fc9;--cls3:#2ac95e;
+}
+html,body{height:100%}
+body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh}
+
+/* ── HEADER ── */
+header{flex-shrink:0;padding:.65rem 1rem .55rem;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(244,201,93,.04),transparent);text-align:center}
+.hd-row{display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:1px}
+.hd-line{height:1px;width:45px;background:linear-gradient(to right,transparent,var(--gold))}
+.hd-line.r{background:linear-gradient(to left,transparent,var(--gold))}
+h1{font-family:'Cinzel',serif;font-size:1.4rem;color:var(--gold);letter-spacing:.05em;text-shadow:0 0 22px rgba(244,201,93,.28)}
+.sub{font-size:.65rem;letter-spacing:.17em;text-transform:uppercase;color:var(--dim)}
+
+/* ── LAYOUT ── */
+.main{display:flex;flex:1;overflow:hidden}
+
+/* ════════════════════════════════════
+   PANNEAU BUILD (gauche)
+   ════════════════════════════════════ */
+.panel-build{width:330px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;background:var(--bg2)}
+
+/* ── Zone paperdoll ── */
+.paperdoll-zone{
+  flex-shrink:0;
+  display:grid;
+  grid-template-columns:62px 1fr 62px;
+  gap:5px;padding:8px;
+  background:radial-gradient(ellipse at 50% 40%,var(--cls-glow,rgba(201,153,42,.1)) 0%,var(--bg2) 65%);
+  transition:background .5s;
+}
+
+/* ── Colonnes de slots ── */
+.slots-col{display:flex;flex-direction:column;gap:4px}
+
+/* ── Slot individuel ── */
+.sl{
+  width:62px;height:62px;flex-shrink:0;
+  background:linear-gradient(140deg,var(--bg4),var(--bg3));
+  border:1px solid var(--border);border-radius:9px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;gap:2px;
+  transition:border-color .2s,background .2s,box-shadow .2s;
+  overflow:hidden;
+}
+.sl:hover{border-color:var(--border2);background:linear-gradient(140deg,var(--bg2),var(--bg4))}
+.sl.eq{
+  border-color:var(--gold-d);
+  background:linear-gradient(140deg,rgba(201,153,42,.12),var(--bg3));
+  box-shadow:0 0 12px rgba(201,153,42,.18),inset 0 0 8px rgba(201,153,42,.06);
+}
+.sl.eq:hover{border-color:var(--gold);box-shadow:0 0 18px rgba(244,201,93,.25)}
+.sl.eq::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(244,201,93,.07) 0%,transparent 50%);
+  pointer-events:none;
+}
+.sl-ico{width:38px;height:38px;display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
+.sl-ico img{width:36px;height:36px;image-rendering:pixelated;filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));transition:transform .2s}
+.sl:hover .sl-ico img{transform:scale(1.08)}
+.sl-ph{font-size:1.3rem;opacity:.15}
+.sl-lbl{font-size:.42rem;text-transform:uppercase;letter-spacing:.05em;color:var(--dim);position:relative;z-index:1;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+.sl.eq .sl-lbl{color:var(--gold-d)}
+.sl-rm{
+  position:absolute;top:2px;right:2px;width:14px;height:14px;
+  border-radius:50%;border:1px solid rgba(217,96,96,.5);
+  background:rgba(8,14,22,.85);color:var(--red);
+  font-size:.5rem;cursor:pointer;align-items:center;justify-content:center;
+  display:none;z-index:2;transition:all .15s;
+}
+.sl-rm:hover{background:var(--red);color:#080e16;border-color:var(--red)}
+.sl:hover .sl-rm.vis{display:flex}
+
+/* badge équipé mini (coin sup gauche) */
+.sl-eq-dot{position:absolute;top:3px;left:3px;width:7px;height:7px;border-radius:50%;background:var(--gold);display:none;z-index:2;box-shadow:0 0 5px rgba(244,201,93,.6)}
+.sl.eq .sl-eq-dot{display:block}
+
+/* ════════════════════════════════════
+   ZONE PERSONNAGE (centre)
+   ════════════════════════════════════ */
+.char-scene{
+  position:relative;display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-end;
+  min-height:320px;overflow:visible;cursor:pointer;
+  padding-bottom:6px;
+}
+/* Sol/plateforme */
+.char-plat{
+  position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
+  width:100px;height:10px;z-index:1;
+  background:radial-gradient(ellipse,rgba(244,201,93,.22) 0%,transparent 70%);
+  transition:width .4s ease,opacity .4s ease;
+}
+.char-plat.wide{width:160px}
+
+/* No-class state */
+.char-empty{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:6px;z-index:8;
+}
+.char-empty-ico{font-size:2.5rem;opacity:.12;color:var(--border2)}
+.char-empty-txt{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.08em;color:var(--border2)}
+
+/* Personnage complet (portrait + corps) */
+.char-fig{
+  position:relative;z-index:4;
+  display:flex;flex-direction:column;align-items:center;
+  margin-bottom:2px;
+  transition:transform .5s cubic-bezier(.34,1.4,.64,1);
+}
+
+
+/* Portrait classe Dofus */
+.char-img{
+  width:154px;height:154px;
+  display:none;border-radius:14px;
+  border:2px solid rgba(255,255,255,.04);
+  box-shadow:0 0 0 2px var(--cls,#c9992a),0 10px 40px rgba(0,0,0,.98),0 0 70px rgba(0,0,0,.35);
+  position:relative;z-index:3;image-rendering:auto;
+  transition:box-shadow .3s,transform .25s;
+}
+.char-img:hover{transform:scale(1.05);box-shadow:0 0 0 3px var(--cls,#c9992a),0 14px 48px rgba(0,0,0,.98),0 0 90px color-mix(in srgb,var(--cls,#c9992a) 20%,transparent)}
+/* Avatar fallback lettre quand pas d'image */
+.char-avatar{
+  width:154px;height:154px;
+  display:none;border-radius:14px;
+  background:linear-gradient(145deg,var(--cls,#c9992a) 0%,var(--cls2,#2a5fc9) 100%);
+  align-items:center;justify-content:center;
+  font-family:'Cinzel',serif;font-size:3.4rem;font-weight:700;
+  color:rgba(255,255,255,.75);
+  box-shadow:0 0 0 2px var(--cls,#c9992a),0 10px 40px rgba(0,0,0,.98);
+  position:relative;z-index:3;letter-spacing:-.02em;
+  text-shadow:0 4px 14px rgba(0,0,0,.6);
+  transition:box-shadow .3s,background .4s;
+}
+.char-full{display:none!important}
+
+.mount-layer,.mount-img,.mount-glow{display:none!important}
+
+/* Familier (gauche) */
+.fam-layer{
+  position:absolute;bottom:10px;left:0;z-index:6;
+  opacity:0;transform:scale(.4) translateX(-10px);
+  transition:opacity .45s,transform .5s cubic-bezier(.34,1.4,.64,1);
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  pointer-events:none;
+}
+.fam-layer.on{opacity:1;transform:scale(1) translateX(0);pointer-events:all;cursor:pointer}
+.fam-img{height:72px;width:auto;object-fit:contain;filter:drop-shadow(0 4px 16px rgba(0,0,0,.95)) drop-shadow(0 0 8px rgba(0,0,0,.6))}
+.fam-sh{width:36px;height:5px;margin-top:-1px;background:radial-gradient(ellipse,rgba(0,0,0,.35),transparent 70%)}
+.fam-nm{font-size:.42rem;color:var(--gold-d);font-family:'Cinzel',serif;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;text-shadow:0 1px 4px rgba(0,0,0,.9)}
+
+/* Hover bar bas (actions) */
+.char-hbar{
+  position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:100%;
+  display:none;align-items:center;justify-content:center;gap:3px;
+  padding:4px;z-index:9;
+  background:linear-gradient(to top,rgba(8,14,22,.92),transparent);
+}
+.char-scene:hover .char-hbar{display:flex}
+.hbar-btn{
+  padding:3px 8px;border-radius:5px;border:1px solid var(--border2);
+  background:rgba(8,14,22,.8);color:var(--dim);font-size:.52rem;
+  font-family:'Lato',sans-serif;cursor:pointer;transition:all .2s;
+  white-space:nowrap;backdrop-filter:blur(4px);
+}
+.hbar-btn:hover{border-color:var(--gold);color:var(--gold)}
+.hbar-btn.act{border-color:var(--gold-d);color:var(--gold)}
+.hbar-btn.off{border-color:rgba(217,96,96,.35);color:var(--red)}
+.hbar-btn.off:hover{border-color:var(--red);background:rgba(217,96,96,.07)}
+
+/* ── Bouton changer classe (coin) ── */
+.char-chg{
+  position:absolute;top:5px;right:4px;z-index:10;
+  background:rgba(8,14,22,.85);border:1px solid var(--border2);border-radius:5px;
+  padding:2px 7px;font-size:.52rem;color:var(--dim);cursor:pointer;
+  font-family:'Lato',sans-serif;transition:all .2s;backdrop-filter:blur(4px);
+  display:none;
+}
+.char-chg:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── RANGÉE BASSE : familier + monture ── */
+.bottom-row{
+  flex-shrink:0;display:flex;align-items:center;gap:5px;
+  padding:0 8px 6px;
+}
+.sl-wide{
+  flex:1;height:52px;
+  background:linear-gradient(140deg,var(--bg4),var(--bg3));
+  border:1px dashed var(--border2);border-radius:9px;
+  display:flex;align-items:center;gap:8px;
+  padding:0 10px;cursor:pointer;transition:all .2s;
+}
+.sl-wide:hover{border-color:var(--gold-d);border-style:solid;background:linear-gradient(140deg,var(--bg2),var(--bg4))}
+.sl-wide.eq{border-color:var(--gold-d);border-style:solid;background:linear-gradient(140deg,rgba(201,153,42,.1),var(--bg3))}
+.sl-wide.eq:hover{border-color:var(--gold)}
+.slw-ico{width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.slw-ico img{width:32px;height:32px;image-rendering:pixelated;filter:drop-shadow(0 2px 5px rgba(0,0,0,.6))}
+.slw-ph{font-size:1.2rem;opacity:.15}
+.slw-info{flex:1;min-width:0}
+.slw-lbl{font-size:.5rem;text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+.slw-nm{font-size:.65rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.sl-wide.eq .slw-nm{color:var(--gold)}
+.slw-rm{
+  width:16px;height:16px;border-radius:50%;border:1px solid rgba(217,96,96,.4);
+  background:transparent;color:var(--red);font-size:.5rem;cursor:pointer;
+  display:none;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;
+}
+.slw-rm:hover{background:var(--red);color:#080e16}
+.sl-wide.eq:hover .slw-rm{display:flex}
+
+/* ── Infos classe + couleurs ── */
+.char-infobar{
+  flex-shrink:0;display:flex;align-items:center;gap:6px;
+  padding:5px 10px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  background:linear-gradient(90deg,var(--bg4),var(--bg2));
+}
+.ci-name{font-family:'Cinzel',serif;font-size:.75rem;color:var(--gold);flex:1}
+.ci-sub{font-size:.54rem;color:var(--dim);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px}
+.swatch{width:20px;height:20px;border-radius:50%;border:2px solid var(--border2);cursor:pointer;transition:transform .2s,border-color .2s;overflow:hidden;position:relative;flex-shrink:0}
+.swatch:hover{transform:scale(1.25);border-color:var(--gold)}
+.swatch input[type=color]{position:absolute;inset:-4px;width:calc(100%+8px);height:calc(100%+8px);opacity:0;cursor:pointer}
+
+/* ── STATS ── */
+.stats-panel{flex:1;overflow-y:auto;padding:.65rem .75rem}
+.stats-panel::-webkit-scrollbar{width:3px}
+.stats-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.sg{margin-bottom:.65rem}
+.sg-t{font-size:.54rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:3px;padding-bottom:3px;border-bottom:1px solid var(--border)}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:2px 0;font-size:.7rem}
+.sr-n{color:var(--dim)}
+.sr-v{font-weight:700;color:var(--text)}
+.sr-v.p{color:var(--green)}.sr-v.n{color:var(--red)}
+.stats-empty{text-align:center;padding:1.5rem 1rem;color:var(--border2);font-size:.7rem;font-style:italic;line-height:1.6}
+/* Summary stats rapide */
+.stats-summ{display:flex;gap:4px;margin-bottom:.55rem;padding:.45rem .5rem;background:var(--bg4);border-radius:8px;border:1px solid var(--border)}
+.ss-it{display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;min-width:36px;padding:2px}
+.ss-v{font-family:'Cinzel',serif;font-size:.82rem;font-weight:700;color:var(--gold-d);line-height:1}
+.ss-v.p{color:var(--green)}.ss-v.b{color:var(--blue)}
+.ss-l{font-size:.42rem;text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+
+/* ════════════════════════════════════
+   PANNEAU ITEMS (droite)
+   ════════════════════════════════════ */
+.panel-items{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* Barre de recherche */
+.srch-bar{
+  flex-shrink:0;display:flex;align-items:center;gap:8px;
+  padding:.7rem 1rem;border-bottom:1px solid var(--border);
+  background:var(--bg4);
+}
+.srch-icon{color:var(--dim);font-size:.85rem;flex-shrink:0}
+.srch-input{flex:1;background:transparent;border:none;color:var(--text);font-family:'Lato',sans-serif;font-size:.88rem;outline:none}
+.srch-input::placeholder{color:var(--border2)}
+.srch-clear{background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:.7rem;padding:0 2px;display:none}
+.srch-clear.vis{display:block}
+.srch-clear:hover{color:var(--red)}
+
+/* Filtres */
+.filtres-bar{
+  flex-shrink:0;display:flex;gap:3px;flex-wrap:wrap;
+  padding:.5rem .9rem;border-bottom:1px solid var(--border);
+  background:var(--bg4);
+}
+.fb{padding:2px 9px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--dim);font-size:.63rem;font-family:'Lato',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}
+.fb:hover{border-color:var(--gold-d);color:var(--text)}
+.fb.on{background:var(--gold-d);border-color:var(--gold-d);color:#080e16;font-weight:700}
+/* Bouton Montures — style distinct */
+.fb.mnt{border-color:rgba(79,168,194,.4);color:var(--blue)}
+.fb.mnt:hover{border-color:var(--blue);background:rgba(79,168,194,.08)}
+.fb.mnt.on{background:var(--blue);border-color:var(--blue);color:#080e16}
+
+/* Grille */
+.grid-area{flex:1;overflow-y:auto;padding:.75rem .85rem}
+.grid-area::-webkit-scrollbar{width:4px}
+.grid-area::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.grid-meta{font-size:.62rem;color:var(--dim);letter-spacing:.07em;text-transform:uppercase;margin-bottom:.65rem}
+.grid-meta b{color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:8px}
+
+/* Carte item */
+.carte{
+  background:linear-gradient(155deg,var(--bg2),var(--bg3));
+  border:1px solid var(--border);border-radius:11px;
+  overflow:hidden;transition:border-color .2s,transform .2s,box-shadow .2s;
+  animation:popIn .3s ease both;
+}
+@keyframes popIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.carte:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,0,0,.5)}
+.carte.eq{
+  border-color:var(--gold-d);
+  box-shadow:0 0 14px rgba(201,153,42,.22);
+}
+.carte.eq:hover{border-color:var(--gold);box-shadow:0 0 20px rgba(244,201,93,.3)}
+/* Carte monture */
+.carte.mnt-c{border-color:rgba(79,168,194,.2)}
+.carte.mnt-c:hover{border-color:var(--blue);box-shadow:0 8px 22px rgba(79,168,194,.12)}
+.carte.mnt-c.eq{border-color:var(--blue);box-shadow:0 0 14px rgba(79,168,194,.28)}
+
+.c-img{
+  height:84px;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 50% 55%,rgba(244,201,93,.05),var(--bg4) 70%);
+  border-bottom:1px solid var(--border);overflow:hidden;position:relative;
+}
+.carte.mnt-c .c-img{background:radial-gradient(ellipse at 50% 55%,rgba(79,168,194,.07),var(--bg4) 70%)}
+.c-img img{width:66px;height:66px;image-rendering:pixelated;filter:drop-shadow(0 4px 9px rgba(0,0,0,.7));transition:transform .2s}
+.carte:hover .c-img img{transform:scale(1.1)}
+
+/* Badge équipé dans la carte */
+.c-eq-badge{
+  position:absolute;top:5px;right:5px;padding:1px 6px;border-radius:20px;
+  background:var(--gold-d);color:#080e16;font-size:.5rem;font-weight:700;
+  font-family:'Lato',sans-serif;letter-spacing:.05em;display:none;
+}
+.carte.eq .c-eq-badge{display:block}
+.carte.mnt-c.eq .c-eq-badge{background:var(--blue)}
+
+.c-body{padding:.55rem .65rem .5rem}
+.c-nom{font-family:'Cinzel',serif;font-size:.68rem;color:var(--gold);margin-bottom:4px;line-height:1.3}
+.carte.mnt-c .c-nom{color:var(--blue)}
+.c-badges{display:flex;gap:3px;margin-bottom:5px;flex-wrap:wrap}
+.badge{font-size:.54rem;padding:1px 6px;border-radius:20px;background:var(--bg4);border:1px solid var(--border);color:var(--dim)}
+.badge.niv{color:var(--blue);border-color:rgba(79,168,194,.3);background:rgba(79,168,194,.07)}
+.badge.typ{color:var(--purple);border-color:rgba(138,112,216,.3);background:rgba(138,112,216,.07)}
+.badge.mnt{color:var(--blue);border-color:rgba(79,168,194,.35);background:rgba(79,168,194,.07)}
+
+.smini{display:none;list-style:none;border-top:1px solid var(--border);padding-top:4px;margin-bottom:6px}
+.smini.op{display:block}
+.sm-l{display:flex;justify-content:space-between;font-size:.63rem;padding:1px 0}
+.sm-n{color:var(--dim)}.sm-v{font-weight:700;color:var(--green)}.sm-v.neg{color:var(--red)}
+
+.c-btns{display:flex;gap:3px}
+.btn-eq{
+  flex:1;padding:4px 5px;border-radius:6px;
+  border:1px solid var(--gold-d);background:transparent;color:var(--gold);
+  font-size:.63rem;font-family:'Lato',sans-serif;cursor:pointer;transition:all .18s;text-align:center;
+}
+.btn-eq:hover{background:var(--gold);color:#080e16;font-weight:700;box-shadow:0 0 10px rgba(244,201,93,.3)}
+.btn-eq.done{background:var(--gold-d);color:#080e16;font-weight:700}
+.btn-eq.done:hover{background:var(--red);border-color:var(--red);color:#fff}
+/* Bouton équiper monture */
+.btn-mnt{
+  flex:1;padding:4px 5px;border-radius:6px;
+  border:1px solid rgba(79,168,194,.5);background:transparent;color:var(--blue);
+  font-size:.63rem;font-family:'Lato',sans-serif;cursor:pointer;transition:all .18s;text-align:center;
+}
+.btn-mnt:hover{background:var(--blue);color:#080e16;font-weight:700;box-shadow:0 0 10px rgba(79,168,194,.3)}
+.btn-mnt.done{background:rgba(79,168,194,.7);color:#080e16;font-weight:700;border-color:var(--blue)}
+.btn-mnt.done:hover{background:var(--red);border-color:var(--red);color:#fff}
+.btn-st{padding:4px 7px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--dim);font-size:.63rem;font-family:'Lato',sans-serif;cursor:pointer;transition:all .18s}
+.btn-st:hover{border-color:var(--gold-d);color:var(--text)}
+
+/* États de chargement */
+.st-wrap{text-align:center;padding:3rem 2rem}
+.spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .75s linear infinite;margin:0 auto .75rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.st-txt{color:var(--dim);font-size:.8rem}
+.plus-wrap{text-align:center;padding:.9rem 0}
+.btn-more{padding:4px 1.5rem;border-radius:20px;border:1px solid var(--gold-d);background:transparent;color:var(--gold);font-family:'Lato',sans-serif;font-size:.73rem;cursor:pointer;transition:all .2s}
+.btn-more:hover{background:var(--gold-d);color:#080e16}
+
+/* ════════════════════════════════════
+   MODAUX
+   ════════════════════════════════════ */
+.modal-ov{position:fixed;inset:0;background:rgba(4,8,14,.9);z-index:200;display:flex;align-items:center;justify-content:center;animation:fadeOv .2s ease;backdrop-filter:blur(5px)}
+@keyframes fadeOv{from{opacity:0}to{opacity:1}}
+.mbox{background:linear-gradient(155deg,var(--bg2),var(--bg3));border:1px solid var(--border2);border-radius:14px;padding:1.3rem;width:460px;max-width:95vw;max-height:88vh;overflow-y:auto;box-shadow:0 22px 60px rgba(0,0,0,.8);display:flex;flex-direction:column;gap:.9rem}
+.mbox::-webkit-scrollbar{width:3px}.mbox::-webkit-scrollbar-thumb{background:var(--border2)}
+.m-title{font-family:'Cinzel',serif;color:var(--gold);font-size:.95rem;text-align:center;letter-spacing:.05em}
+.m-srch{background:var(--bg4);border:1px solid var(--border2);border-radius:7px;padding:6px 11px;color:var(--text);font-family:'Lato',sans-serif;font-size:.8rem;outline:none;width:100%}
+.m-srch:focus{border-color:var(--gold-d)}
+.mgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.mgrid4{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.mcard{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:9px 5px 7px;border-radius:9px;border:1px solid var(--border);
+  background:var(--bg4);cursor:pointer;transition:all .18s;
+}
+.mcard:hover{border-color:var(--gold-d);background:rgba(244,201,93,.05);transform:translateY(-2px)}
+.mcard.sel{border-color:var(--gold);background:rgba(244,201,93,.09);box-shadow:0 0 10px rgba(244,201,93,.18)}
+.mcard img{width:50px;height:50px;object-fit:contain;image-rendering:auto}
+.mcard-nm{font-size:.55rem;color:var(--dim);text-align:center;line-height:1.3}
+.mcard.sel .mcard-nm{color:var(--gold);font-weight:700}
+.mcard-sub{font-size:.48rem;color:var(--border2)}
+.m-more{display:block;margin:.4rem auto 0;padding:4px 1.4rem;border-radius:20px;border:1px solid var(--gold-d);background:transparent;color:var(--gold);font-family:'Lato',sans-serif;font-size:.7rem;cursor:pointer;transition:all .2s}
+.m-more:hover{background:var(--gold-d);color:#080e16}
+.m-close{display:block;margin:.5rem auto 0;padding:4px 1.8rem;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--dim);font-family:'Lato',sans-serif;font-size:.7rem;cursor:pointer;transition:all .2s}
+.m-close:hover{border-color:var(--gold-d);color:var(--text)}
+.m-danger{display:block;margin:.3rem auto 0;padding:4px 1.4rem;border-radius:20px;border:1px solid rgba(217,96,96,.35);background:transparent;color:var(--red);font-family:'Lato',sans-serif;font-size:.7rem;cursor:pointer;transition:all .2s}
+.m-danger:hover{background:var(--red);color:#fff;border-color:var(--red)}
+
+
+/* ── Rangée 6 Dofus / Trophées ── */
+.dofus-row{
+  flex-shrink:0;display:grid;grid-template-columns:repeat(6,1fr);gap:4px;
+  padding:5px 8px 6px;
+  border-top:1px solid rgba(138,112,216,.18);border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,rgba(138,112,216,.05),transparent);
+}
+.sd{
+  height:56px;background:linear-gradient(140deg,var(--bg4),var(--bg3));
+  border:1px solid rgba(138,112,216,.22);border-radius:8px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;gap:1px;
+  transition:border-color .2s,background .2s,box-shadow .2s;overflow:hidden;
+}
+.sd:hover{border-color:rgba(138,112,216,.55);background:linear-gradient(140deg,rgba(138,112,216,.05),var(--bg4))}
+.sd.eq{border-color:var(--purple);background:linear-gradient(140deg,rgba(138,112,216,.14),var(--bg3));box-shadow:0 0 10px rgba(138,112,216,.2),inset 0 0 6px rgba(138,112,216,.06)}
+.sd.eq:hover{border-color:rgba(138,112,216,.9);box-shadow:0 0 18px rgba(138,112,216,.32)}
+.sd.eq::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(138,112,216,.08),transparent 50%);pointer-events:none}
+.sd-dot{position:absolute;top:2px;left:2px;width:6px;height:6px;border-radius:50%;background:var(--purple);display:none;box-shadow:0 0 4px rgba(138,112,216,.7)}
+.sd.eq .sd-dot{display:block}
+.sd-ico{width:30px;height:30px;display:flex;align-items:center;justify-content:center}
+.sd-ico img{width:28px;height:28px;image-rendering:pixelated;filter:drop-shadow(0 2px 5px rgba(0,0,0,.7));transition:transform .2s}
+.sd:hover .sd-ico img{transform:scale(1.1)}
+.sd-ph{font-size:1.15rem;opacity:.11;color:var(--purple)}
+.sd-lbl{font-size:.37rem;text-transform:uppercase;letter-spacing:.04em;color:rgba(138,112,216,.4);max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+.sd.eq .sd-lbl{color:var(--purple)}
+.sd-rm{position:absolute;top:1px;right:1px;width:12px;height:12px;border-radius:50%;border:1px solid rgba(217,96,96,.4);background:rgba(8,14,22,.85);color:var(--red);font-size:.44rem;cursor:pointer;align-items:center;justify-content:center;display:none;z-index:2;transition:all .15s}
+.sd-rm:hover{background:var(--red);color:#080e16;border-color:var(--red)}
+.sd:hover .sd-rm.vis{display:flex}
+
+
+/* Filtre niveau */
+.lvl-rng{display:flex;align-items:center;gap:3px;margin-left:auto;flex-shrink:0;padding-left:5px;border-left:1px solid var(--border)}
+.lvl-lbl{font-size:.52rem;color:var(--dim);text-transform:uppercase;letter-spacing:.05em}
+.lvl-sep{font-size:.6rem;color:var(--border2)}
+.lvl-inp{width:44px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-family:'Lato',sans-serif;font-size:.68rem;padding:2px 4px;text-align:center;outline:none;-moz-appearance:textfield}
+.lvl-inp::-webkit-inner-spin-button,.lvl-inp::-webkit-outer-spin-button{-webkit-appearance:none}
+.lvl-inp:focus{border-color:var(--gold-d)}
+.lvl-inp::placeholder{color:var(--border2)}
+/* Boutons infobar */
+.ci-btn{background:transparent;border:1px solid var(--border2);border-radius:5px;color:var(--dim);font-size:.68rem;padding:2px 7px;cursor:pointer;transition:all .15s;font-family:'Lato',sans-serif;flex-shrink:0;line-height:1}
+.ci-btn:hover{border-color:var(--gold-d);color:var(--gold)}
+.ci-btn.danger:hover{border-color:var(--red);color:var(--red)}
+.ci-name{cursor:default}
+.ci-name[contenteditable="true"]{outline:1px solid var(--gold-d);border-radius:3px;padding:0 3px;cursor:text}
+
+
+/* ── Modal détail item ─────────────────────────────────────────── */
+.item-modal-ov{position:fixed;inset:0;background:rgba(4,8,14,.92);z-index:300;display:flex;align-items:center;justify-content:center;animation:fadeOv .18s ease;backdrop-filter:blur(6px)}
+.ibox{background:linear-gradient(155deg,var(--bg2),var(--bg3));border:1px solid var(--border2);border-radius:16px;width:340px;max-width:95vw;max-height:88vh;overflow-y:auto;box-shadow:0 24px 70px rgba(0,0,0,.85);display:flex;flex-direction:column}
+.ibox::-webkit-scrollbar{width:3px}.ibox::-webkit-scrollbar-thumb{background:var(--border2)}
+.im-head{display:flex;align-items:center;gap:12px;padding:1rem 1.1rem .8rem;border-bottom:1px solid var(--border)}
+.im-ico{width:68px;height:68px;background:radial-gradient(ellipse at 50% 55%,rgba(244,201,93,.07),var(--bg4) 75%);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.im-ico img{width:56px;height:56px;image-rendering:pixelated;filter:drop-shadow(0 3px 8px rgba(0,0,0,.7))}
+.im-info{flex:1;min-width:0}
+.im-nom{font-family:'Cinzel',serif;font-size:.92rem;color:var(--gold);line-height:1.3;margin-bottom:4px}
+.im-badges{display:flex;gap:4px;flex-wrap:wrap}
+.im-body{padding:.7rem 1.1rem}
+.im-sg{margin-bottom:.6rem}
+.im-gt{font-size:.5rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:3px;padding-bottom:2px;border-bottom:1px solid var(--border)}
+.im-row{display:flex;justify-content:space-between;align-items:center;padding:2px 0;font-size:.72rem}
+.im-rn{color:var(--text)}.im-rv{font-weight:700}
+.im-rv.p{color:var(--green)}.im-rv.n{color:var(--red)}.im-rv.b{color:var(--blue)}
+.im-btns{display:flex;gap:6px;padding:.7rem 1.1rem;border-top:1px solid var(--border)}
+/* ── HP bar ────────────────────────────────────────────────────── */
+.hp-bar-wrap{margin-bottom:.6rem;padding:.45rem .5rem;background:var(--bg4);border-radius:7px;border:1px solid rgba(217,96,96,.2)}
+.hp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.hp-lbl{font-size:.5rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(217,96,96,.8)}
+.hp-val{font-family:'Cinzel',serif;font-size:.9rem;font-weight:700;color:#e87070}
+.hp-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.hp-fill{height:100%;background:linear-gradient(90deg,#c84a4a,#e87070);border-radius:3px;transition:width .5s}
+
+
+/* Sort buttons */
+.sort-rng{display:flex;align-items:center;gap:2px;margin-left:4px;flex-shrink:0}
+.sort-btn{background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--dim);font-size:.5rem;padding:3px 6px;cursor:pointer;line-height:1;transition:color .15s,border-color .15s}
+.sort-btn:hover{color:var(--text);border-color:var(--border2)}
+.sort-btn.on{color:var(--gold);border-color:rgba(244,201,93,.4);background:rgba(244,201,93,.06)}
+.ss-it.pa-b .ss-v{color:#7ec8e3}
+.ss-it.pm-b .ss-v{color:#7ebc8a}
+/* Import overlay */
+.import-ov{position:fixed;inset:0;background:rgba(4,8,14,.88);z-index:400;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.import-box{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:1.4rem 1.6rem;text-align:center;max-width:300px}
+.import-box h3{font-family:'Cinzel',serif;color:var(--gold);margin-bottom:.5rem;font-size:.95rem}
+.import-box p{color:var(--dim);font-size:.72rem;margin-bottom:.6rem}
+.import-prog{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:.6rem}
+.import-fill{height:100%;background:linear-gradient(90deg,var(--gold-d),var(--gold));border-radius:2px;transition:width .3s}
+
+
+/* ── Résistances visuelles ───────────────────────────────────── */
+.res-panel{margin-bottom:.6rem;padding:.5rem .55rem .45rem;background:var(--bg4);border-radius:8px;border:1px solid var(--border)}
+.res-title{font-size:.5rem;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);margin-bottom:.45rem}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px 8px}
+.res-row{display:flex;align-items:center;gap:5px}
+.res-icon{width:14px;height:14px;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem}
+.res-bar-wrap{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.res-bar-fill{height:100%;border-radius:3px;transition:width .5s}
+.res-val{font-size:.58rem;font-weight:700;min-width:28px;text-align:right}
+/* ── Panoplies ───────────────────────────────────────────────── */
+.pano-panel{margin-bottom:.6rem}
+.pano-card{background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:.45rem .55rem;margin-bottom:3px;cursor:pointer;transition:border-color .2s}
+.pano-card:hover{border-color:var(--border2)}
+.pano-card.open{border-color:rgba(244,201,93,.3)}
+.pano-head{display:flex;align-items:center;gap:6px}
+.pano-name{font-family:'Cinzel',serif;font-size:.65rem;color:var(--gold);flex:1}
+.pano-count{font-size:.55rem;background:rgba(244,201,93,.12);color:var(--gold);border:1px solid rgba(244,201,93,.25);border-radius:10px;padding:1px 6px}
+.pano-chevron{font-size:.5rem;color:var(--dim);transition:transform .2s}
+.pano-card.open .pano-chevron{transform:rotate(180deg)}
+.pano-body{display:none;margin-top:.4rem;padding-top:.4rem;border-top:1px solid var(--border)}
+.pano-card.open .pano-body{display:block}
+.pano-bonus{margin-bottom:.3rem}
+.pano-bh{display:flex;align-items:center;gap:4px;margin-bottom:2px}
+.pano-bi{font-size:.55rem;background:rgba(100,200,120,.1);color:var(--green);border:1px solid rgba(100,200,120,.2);border-radius:8px;padding:1px 6px}
+.pano-bactive{background:rgba(100,200,120,.2);border-color:rgba(100,200,120,.5);font-weight:700}
+.pano-bstat{font-size:.62rem;color:var(--text2);padding-left:2px}
+.pano-bstat span{color:var(--green);font-weight:700}
+.pano-loading{font-size:.62rem;color:var(--dim);text-align:center;padding:.3rem 0}
+
+
+/* ── Tooltip slot équipé ─────────────────────────────────────── */
+.sl-tip{position:fixed;z-index:200;pointer-events:none;opacity:0;transition:opacity .12s;max-width:200px}
+.sl-tip.show{opacity:1}
+.sl-tip-box{background:linear-gradient(150deg,var(--bg1),var(--bg2));border:1px solid var(--border2);border-radius:10px;padding:.55rem .65rem;box-shadow:0 12px 40px rgba(0,0,0,.85)}
+.st-nom{font-family:'Cinzel',serif;font-size:.7rem;color:var(--gold);margin-bottom:.35rem;line-height:1.3}
+.st-row{display:flex;justify-content:space-between;gap:10px;font-size:.64rem;padding:1px 0}
+.st-n{color:var(--text2)}.st-v{font-weight:700}
+.st-v.p{color:var(--green)}.st-v.n{color:var(--red)}
+.st-sep{height:1px;background:var(--border);margin:.3rem 0}
+.st-meta{font-size:.55rem;color:var(--dim)}
+/* ── Modal multi-builds ──────────────────────────────────────── */
+.builds-ov{position:fixed;inset:0;background:rgba(4,8,14,.9);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.builds-box{background:linear-gradient(155deg,var(--bg2),var(--bg3));border:1px solid var(--border2);border-radius:16px;width:380px;max-width:95vw;max-height:85vh;overflow-y:auto;box-shadow:0 24px 70px rgba(0,0,0,.85);display:flex;flex-direction:column}
+.builds-box::-webkit-scrollbar{width:3px}.builds-box::-webkit-scrollbar-thumb{background:var(--border2)}
+.bld-head{display:flex;align-items:center;padding:.9rem 1rem .7rem;border-bottom:1px solid var(--border);gap:8px}
+.bld-head h3{font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold);flex:1;margin:0}
+.bld-list{padding:.6rem .8rem;display:flex;flex-direction:column;gap:5px}
+.bld-card{display:flex;align-items:center;gap:8px;padding:.55rem .7rem;background:var(--bg4);border:1px solid var(--border);border-radius:9px;cursor:pointer;transition:border-color .18s}
+.bld-card:hover{border-color:var(--border2)}.bld-card.active{border-color:rgba(244,201,93,.45);background:rgba(244,201,93,.04)}
+.bld-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.bld-info{flex:1;min-width:0}
+.bld-nm{font-family:'Cinzel',serif;font-size:.7rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bld-meta{font-size:.55rem;color:var(--dim);margin-top:1px}
+.bld-acts{display:flex;gap:4px;flex-shrink:0}
+.bld-del{background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--dim);font-size:.6rem;padding:2px 6px;cursor:pointer;transition:all .15s}
+.bld-del:hover{border-color:var(--red);color:var(--red)}
+.bld-new{margin:.4rem .8rem .8rem;display:flex;gap:6px}
+
+
+/* ── Comparaison d'items ─────────────────────────────────────── */
+.cmp-sel{outline:2px solid var(--gold)!important;outline-offset:2px}
+.cmp-badge{position:absolute;top:5px;left:5px;background:var(--gold);color:#080e16;font-size:.5rem;font-weight:700;padding:1px 5px;border-radius:8px;pointer-events:none}
+.cmp-ov{position:fixed;inset:0;background:rgba(4,8,14,.92);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.cmp-box{background:linear-gradient(155deg,var(--bg2),var(--bg3));border:1px solid var(--border2);border-radius:16px;width:680px;max-width:97vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 70px rgba(0,0,0,.85);display:flex;flex-direction:column}
+.cmp-box::-webkit-scrollbar{width:3px}.cmp-box::-webkit-scrollbar-thumb{background:var(--border2)}
+.cmp-head{display:flex;align-items:center;padding:.9rem 1rem .7rem;border-bottom:1px solid var(--border);gap:8px}
+.cmp-head h3{font-family:'Cinzel',serif;font-size:.88rem;color:var(--gold);flex:1;margin:0}
+.cmp-cols{display:grid;grid-template-columns:1fr 1fr;gap:0;flex:1}
+.cmp-col{padding:.7rem .9rem}
+.cmp-col+.cmp-col{border-left:1px solid var(--border)}
+.cmp-item-head{display:flex;align-items:center;gap:8px;margin-bottom:.6rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+.cmp-ico{width:48px;height:48px;background:var(--bg4);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cmp-ico img{width:38px;height:38px;image-rendering:pixelated;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
+.cmp-iname{font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold);line-height:1.3}
+.cmp-imeta{font-size:.55rem;color:var(--dim);margin-top:2px}
+.cmp-stat-row{display:flex;justify-content:space-between;padding:2px 0;font-size:.68rem;border-bottom:1px solid rgba(255,255,255,.03)}
+.cmp-sn{color:var(--text2)}.cmp-sv{font-weight:700}
+.cmp-sv.p{color:var(--green)}.cmp-sv.n{color:var(--red)}.cmp-sv.eq{color:var(--dim)}
+.cmp-sv.better{color:#7ef07e;text-shadow:0 0 8px rgba(126,240,126,.4)}
+.cmp-sv.worse{color:#f07e7e;text-shadow:0 0 8px rgba(240,126,126,.3)}
+.cmp-hint{font-size:.58rem;color:var(--dim);text-align:center;padding:.4rem 0 0}
+/* Export PNG hint */
+.ci-btn.export-png{position:relative}
+
+
+/* ── Drag & Drop ─────────────────────────────────────────────── */
+.carte[draggable=true]{cursor:grab}
+.carte.dragging{opacity:.4;transform:scale(.97)}
+.sl.drag-over{border-color:var(--gold)!important;background:rgba(244,201,93,.12)!important;box-shadow:0 0 18px rgba(244,201,93,.35)!important;transform:scale(1.06)}
+.sl.drag-reject{border-color:var(--red)!important;background:rgba(200,80,80,.1)!important}
+.sd.drag-over{border-color:rgba(138,112,216,.7)!important;background:rgba(138,112,216,.15)!important;box-shadow:0 0 14px rgba(138,112,216,.3)!important}
+/* ── Animations slot équipé ──────────────────────────────────── */
+@keyframes slotEquip{0%{box-shadow:0 0 0 2px var(--gold),0 0 22px rgba(201,153,42,.6)}60%{box-shadow:0 0 0 4px var(--gold),0 0 40px rgba(201,153,42,.4)}100%{box-shadow:0 0 12px rgba(201,153,42,.18)}}
+@keyframes slotShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes slotPop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+.sl.anim-equip{animation:slotEquip .55s ease forwards,slotPop .3s ease}
+.sl.anim-shake{animation:slotShake .35s ease}
+.sd.anim-equip{animation:slotEquip .55s ease forwards,slotPop .3s ease}
+
+
+/* ── Filtre classe ───────────────────────────────────────────── */
+.cls-filter-wrap{display:flex;align-items:center;gap:4px;padding:3px 6px;background:var(--bg4);border:1px solid var(--border);border-radius:7px;margin-bottom:4px;flex-wrap:wrap}
+.cls-filter-lbl{font-size:.5rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);flex-shrink:0}
+.cls-fb{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all .15s;opacity:.45;flex-shrink:0;padding:0;background:transparent;display:flex;align-items:center;justify-content:center;font-size:.55rem;font-family:'Cinzel',serif;font-weight:700;color:#fff}
+.cls-fb:hover{opacity:.8;transform:scale(1.1)}
+.cls-fb.on{opacity:1;border-color:#fff;transform:scale(1.12);box-shadow:0 0 8px rgba(0,0,0,.5)}
+.cls-fb.all-btn{border-radius:6px;width:auto;padding:0 6px;font-size:.55rem;background:var(--bg3);border-color:var(--border);color:var(--text);opacity:.7}
+.cls-fb.all-btn.on{opacity:1;border-color:var(--gold);color:var(--gold)}
+/* Pastille restriction sur carte */
+.c-cls-badge{position:absolute;bottom:4px;left:4px;font-size:.48rem;background:rgba(8,14,22,.75);border:1px solid var(--border);border-radius:5px;padding:1px 4px;color:var(--dim);pointer-events:none}
+
+
+/* ── Kamas tracker ───────────────────────────────────────────── */
+.kamas-panel{margin-bottom:.6rem;padding:.45rem .55rem;background:var(--bg4);border-radius:8px;border:1px solid rgba(255,210,100,.15)}
+.kamas-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.kamas-lbl{font-size:.5rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,210,100,.7);display:flex;align-items:center;gap:4px}
+.kamas-total{font-family:'Cinzel',serif;font-size:.82rem;font-weight:700;color:#ffd264}
+.kamas-list{margin-top:.4rem;display:flex;flex-direction:column;gap:2px;max-height:120px;overflow-y:auto}
+.kamas-list::-webkit-scrollbar{width:2px}.kamas-list::-webkit-scrollbar-thumb{background:var(--border2)}
+.kamas-item{display:flex;align-items:center;gap:5px;font-size:.6rem}
+.kamas-iname{flex:1;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kamas-inp{width:72px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:.6rem;padding:2px 4px;text-align:right;font-family:'Lato',sans-serif}
+.kamas-inp:focus{border-color:rgba(255,210,100,.5);outline:none}
+.kamas-unit{font-size:.52rem;color:var(--dim)}
+
+footer{flex-shrink:0;text-align:center;padding:.45rem;border-top:1px solid var(--border);font-size:.58rem;color:var(--border2);letter-spacing:.04em}
+footer b{color:var(--gold-d)}
+@media(max-width:680px){.main{flex-direction:column}.panel-build{width:100%;border-right:none;border-bottom:1px solid var(--border)}.paperdoll-zone{grid-template-columns:58px 1fr 58px}.sl{width:58px;height:58px}body{overflow:auto}.app{height:auto}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="hd-row"><div class="hd-line"></div><h1>&#9876; Stuff Builder</h1><div class="hd-line r"></div></div>
+  <p class="sub">Dofus &middot; Explore &middot; &Eacute;quipe &middot; Optimise</p>
+</header>
+<div class="main">
+
+<!-- ═══ PANNEAU BUILD ═══ -->
+<div class="panel-build">
+
+  <!-- Paperdoll zone -->
+  <div class="paperdoll-zone" id="paperdoll-zone">
+
+    <!-- ── Col gauche ── -->
+    <div class="slots-col" id="col-left">
+      <div class="sl" id="sl-chapeau"   onclick="slotAct('chapeau')"  ><div class="sl-eq-dot"></div><div class="sl-ico" id="sli-chapeau"  ><span class="sl-ph">&#127913;</span></div><div class="sl-lbl" id="sll-chapeau"  >Chapeau</div>  <button class="sl-rm" id="slr-chapeau"   onclick="unequip(event,'chapeau'  )">&#10005;</button></div>
+      <div class="sl" id="sl-cape"      onclick="slotAct('cape')"     ><div class="sl-eq-dot"></div><div class="sl-ico" id="sli-cape"     ><span class="sl-ph">&#129405;</span></div><div class="sl-lbl" id="sll-cape"     >Cape</div>      <button class="sl-rm" id="slr-cape"      onclick="unequip(event,'cape'     )">&#10005;</button></div>
+      <div class="sl" id="sl-ceinture"  onclick="slotAct('ceinture')" ><div class="sl-eq-dot"></div><div class="sl-ico" id="sli-ceinture" ><span class="sl-ph">&#128996;</span></div><div class="sl-lbl" id="sll-ceinture" >Ceinture</div> <button class="sl-rm" id="slr-ceinture"  onclick="unequip(event,'ceinture' )">&#10005;</button></div>
+      <div class="sl" id="sl-bottes"    onclick="slotAct('bottes')"   ><div class="sl-eq-dot"></div><div class="sl-ico" id="sli-bottes"   ><span class="sl-ph">&#128095;</span></div><div class="sl-lbl" id="sll-bottes"   >Bottes</div>   <button class="sl-rm" id="slr-bottes"    onclick="unequip(event,'bottes'   )">&#10005;</button></div>
+      <div class="sl" id="sl-arme"      onclick="slotAct('arme')"     ><div class="sl-eq-dot"></div><div class="sl-ico" id="sli-arme"     ><span class="sl-ph">&#9876;</span>  </div><div class="sl-lbl" id="sll-arme"     >Arme</div>      <button class="sl-rm" id="slr-arme"      onclick="unequip(event,'arme'     )">&#10005;</button></div>
+      <div class="sl" id="sl-arme2"     onclick="slotAct('arme2')"    ><div class="sl-eq-dot"></div><div class="sl-ico" id="sli-arme2"    ><span class="sl-ph">&#128737;</span></div><div class="sl-lbl" id="sll-arme2"    >Arme 2</div>    <button class="sl-rm" id="slr-arme2"     onclick="unequip(event,'arme2'    )">&#10005;</button></div>
+    </div>
+
+    <!-- ── Personnage centre ── -->
+    <div class="char-scene" id="char-scene">
+      <div class="char-plat" id="char-plat"></div>
+
+      <!-- No-class -->
+      <div class="char-empty" id="char-empty" onclick="openClassPicker()">
+        <div class="char-empty-ico">&#129497;</div>
+        <div class="char-empty-txt">Choisir une classe</div>
+      </div>
+
+      <!-- Familier -->
+      <div class="fam-layer" id="fam-layer">
+        <img class="fam-img" id="fam-img" src="" alt="">
+        <div class="fam-sh"></div>
+        <span class="fam-nm" id="fam-nm"></span>
+      </div>
+
+      <!-- Figure personnage -->
+      <div class="char-fig" id="char-fig">
+        <img class="char-img" id="char-img" src="" alt="">
+        <div class="char-avatar" id="char-avatar"></div>
+      </div>
+
+      <!-- Bouton changer classe -->
+      <button class="char-chg" id="char-chg" onclick="openClassPicker()">&#10022; Classe</button>
+
+      <!-- Barre hover -->
+      <div class="char-hbar" id="char-hbar" style="display:none">
+        <button class="hbar-btn" id="hb-class" onclick="openClassPicker()">&#9876; Classe</button>
+        <button class="hbar-btn" id="hb-mount" onclick="openMountPicker()">&#128014; Monture</button>
+        <button class="hbar-btn" id="hb-fam"   onclick="goFamFilter()">&#128062; Familier</button>
+      </div>
+    </div>
+
+    <!-- ── Col droite ── -->
+    <div class="slots-col" id="col-right">
+      <div class="sl" id="sl-amulette" onclick="slotAct('amulette')"><div class="sl-eq-dot"></div><div class="sl-ico" id="sli-amulette"><span class="sl-ph">&#128255;</span></div><div class="sl-lbl" id="sll-amulette">Amulette</div><button class="sl-rm" id="slr-amulette" onclick="unequip(event,'amulette')">&#10005;</button></div>
+      <div class="sl" id="sl-anneau1"  onclick="slotAct('anneau1')" ><div class="sl-eq-dot"></div><div class="sl-ico" id="sli-anneau1" ><span class="sl-ph">&#128141;</span></div><div class="sl-lbl" id="sll-anneau1" >Anneau 1</div><button class="sl-rm" id="slr-anneau1"  onclick="unequip(event,'anneau1' )">&#10005;</button></div>
+      <div class="sl" id="sl-anneau2"  onclick="slotAct('anneau2')" ><div class="sl-eq-dot"></div><div class="sl-ico" id="sli-anneau2" ><span class="sl-ph">&#128141;</span></div><div class="sl-lbl" id="sll-anneau2" >Anneau 2</div><button class="sl-rm" id="slr-anneau2"  onclick="unequip(event,'anneau2' )">&#10005;</button></div>
+      <div class="sl" id="sl-bouclier" onclick="slotAct('bouclier')"><div class="sl-eq-dot"></div><div class="sl-ico" id="sli-bouclier"><span class="sl-ph">&#128737;</span></div><div class="sl-lbl" id="sll-bouclier">Bouclier</div><button class="sl-rm" id="slr-bouclier" onclick="unequip(event,'bouclier')">&#10005;</button></div>
+
+    </div>
+  </div>
+
+  <!-- ═══ Rangée Dofus / Trophées (6 slots) ═══ -->
+  <div class="dofus-row" id="dofus-row">
+    <div class="sd" id="sl-dofus1" onclick="slotAct('dofus1')">
+      <div class="sd-dot"></div>
+      <div class="sd-ico" id="sli-dofus1"><span class="sd-ph">&#129704;</span></div>
+      <div class="sd-lbl" id="sll-dofus1">D1</div>
+      <button class="sd-rm" id="slr-dofus1" onclick="unequip(event,'dofus1')">&#10005;</button>
+    </div>
+    <div class="sd" id="sl-dofus2" onclick="slotAct('dofus2')">
+      <div class="sd-dot"></div>
+      <div class="sd-ico" id="sli-dofus2"><span class="sd-ph">&#129704;</span></div>
+      <div class="sd-lbl" id="sll-dofus2">D2</div>
+      <button class="sd-rm" id="slr-dofus2" onclick="unequip(event,'dofus2')">&#10005;</button>
+    </div>
+    <div class="sd" id="sl-dofus3" onclick="slotAct('dofus3')">
+      <div class="sd-dot"></div>
+      <div class="sd-ico" id="sli-dofus3"><span class="sd-ph">&#129704;</span></div>
+      <div class="sd-lbl" id="sll-dofus3">D3</div>
+      <button class="sd-rm" id="slr-dofus3" onclick="unequip(event,'dofus3')">&#10005;</button>
+    </div>
+    <div class="sd" id="sl-dofus4" onclick="slotAct('dofus4')">
+      <div class="sd-dot"></div>
+      <div class="sd-ico" id="sli-dofus4"><span class="sd-ph">&#129704;</span></div>
+      <div class="sd-lbl" id="sll-dofus4">D4</div>
+      <button class="sd-rm" id="slr-dofus4" onclick="unequip(event,'dofus4')">&#10005;</button>
+    </div>
+    <div class="sd" id="sl-dofus5" onclick="slotAct('dofus5')">
+      <div class="sd-dot"></div>
+      <div class="sd-ico" id="sli-dofus5"><span class="sd-ph">&#129704;</span></div>
+      <div class="sd-lbl" id="sll-dofus5">D5</div>
+      <button class="sd-rm" id="slr-dofus5" onclick="unequip(event,'dofus5')">&#10005;</button>
+    </div>
+    <div class="sd" id="sl-dofus6" onclick="slotAct('dofus6')">
+      <div class="sd-dot"></div>
+      <div class="sd-ico" id="sli-dofus6"><span class="sd-ph">&#129704;</span></div>
+      <div class="sd-lbl" id="sll-dofus6">D6</div>
+      <button class="sd-rm" id="slr-dofus6" onclick="unequip(event,'dofus6')">&#10005;</button>
+    </div>
+  </div>
+
+  <!-- Rangée basse : familier + monture -->
+  <div class="bottom-row">
+    <div class="sl-wide" id="slw-fam" onclick="goFamFilter()">
+      <div class="slw-ico" id="slwi-fam"><span class="slw-ph">&#128062;</span></div>
+      <div class="slw-info">
+        <div class="slw-lbl">Familier</div>
+        <div class="slw-nm" id="slwn-fam">&mdash;</div>
+      </div>
+      <button class="slw-rm" id="slwr-fam" onclick="unequip(event,'familier')">&#10005;</button>
+    </div>
+    <div class="sl-wide" id="slw-mount" onclick="openMountPicker()" style="flex:1.6">
+      <div class="slw-ico" id="slwi-mount"><span class="slw-ph">&#128014;</span></div>
+      <div class="slw-info">
+        <div class="slw-lbl">Monture</div>
+        <div class="slw-nm" id="slwn-mount">&mdash;</div>
+      </div>
+      <button class="slw-rm" id="slwr-mount" onclick="unequipMount(event)">&#10005;</button>
+    </div>
+  </div>
+
+  <!-- Barre infos classe + couleurs -->
+  <div class="char-infobar">
+    <span class="ci-name" id="ci-name" title="Double-clic pour renommer" ondblclick="editBuildName()">Mon Build</span>
+    <span class="ci-sub" id="ci-sub"></span>
+    <div class="swatch" id="sw1" style="background:var(--cls,#c9992a)"><input type="color" value="#c9992a" oninput="setClsColor(1,this.value)"></div>
+    <div class="swatch" id="sw2" style="background:var(--cls2,#2a5fc9)"><input type="color" value="#2a5fc9" oninput="setClsColor(2,this.value)"></div>
+    <button class="ci-btn" onclick="openBuildsModal()" title="Mes builds">&#128196;</button>
+    <button class="ci-btn" onclick="exportPNG()" title="Exporter en image">&#128247;</button>
+    <button class="ci-btn" onclick="exportBuild()" title="Copier le lien du build">&#128279;</button>
+    <button class="ci-btn danger" onclick="resetBuild()" title="R&eacute;initialiser">&#128465;</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-panel" id="stats-panel"><div class="stats-empty">&#9876; &Eacute;quipe des items pour voir tes stats</div></div>
+</div>
+
+<!-- ═══ PANNEAU ITEMS ═══ -->
+<div class="panel-items">
+  <div class="srch-bar">
+    <span class="srch-icon">&#128269;</span>
+    <input id="srch" class="srch-input" placeholder="Rechercher un item Dofus..." autocomplete="off">
+    <button class="srch-clear" id="srch-clear" onclick="clearSearch()">&#10005;</button>
+  </div>
+  <div class="filtres-bar" id="filtres-bar"></div>
+  <div class="grid-area">
+    <div id="st-load" class="st-wrap"><div class="spinner"></div><p class="st-txt">Chargement des items...</p></div>
+    <div id="st-empty" class="st-wrap" style="display:none"><p class="st-txt">&#128302; Aucun item trouv&eacute;</p></div>
+    <div id="st-ok" style="display:none">
+      <p class="grid-meta" id="grid-meta"></p>
+      <div class="grid" id="grid"></div>
+      <div class="plus-wrap" id="plus-wrap" style="display:none"><button class="btn-more" id="btn-more">Charger plus &#8595;</button></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- .main -->
+<footer>Construit avec &hearts; par <b>Bilal</b> &middot; API&nbsp;DofusDude &middot; Portfolio Ankama</footer>
+</div><!-- .app -->
+<script>
+const API_EQ = 'https://api.dofusdu.de/dofus3/v1/fr/items/equipment'
+const API_MT = 'https://api.dofusdu.de/dofus3/v1/fr/mounts'
+const API_SETS = 'https://api.dofusdu.de/dofus3/v1/fr/sets'
+
+const TYPES = ['Tous','Chapeau','Anneau','Amulette','Ceinture','Bottes','Cape',
+               'Épée','Arc','Dague','Bâton','Bouclier','Familier','Muldo','Dofus','Trophée']
+
+const SLOT_DEFS = [
+  {id:'chapeau', label:'Chapeau',  types:['Chapeau']},
+  {id:'amulette',label:'Amulette', types:['Amulette']},
+  {id:'cape',    label:'Cape',     types:['Cape','Manteau']},
+  {id:'ceinture',label:'Ceinture', types:['Ceinture']},
+  {id:'anneau1', label:'Anneau 1', types:['Anneau']},
+  {id:'anneau2', label:'Anneau 2', types:['Anneau']},
+  {id:'bottes',  label:'Bottes',   types:['Bottes']},
+  {id:'arme',    label:'Arme',     types:['Épée','Arc','Dague','Bâton','Marteau','Hache','Faux','Pelle','Pioche','Baguette','Arme']},
+  {id:'arme2',   label:'Arme 2',   types:['Épée','Arc','Dague','Bâton','Marteau','Hache','Faux','Pelle','Pioche','Baguette','Arme']},
+  {id:'bouclier',label:'Bouclier', types:['Bouclier']},
+  {id:'familier',label:'Familier', types:['Familier','Compagnon','Fantôme','Muldo']},
+  {id:'dofus1',  label:'Dofus 1',  types:['Dofus','Trophée','Objet vivant']},
+  {id:'dofus2',  label:'Dofus 2',  types:['Dofus','Trophée','Objet vivant']},
+  {id:'dofus3',  label:'Dofus 3',  types:['Dofus','Trophée','Objet vivant']},
+  {id:'dofus4',  label:'Dofus 4',  types:['Dofus','Trophée','Objet vivant']},
+  {id:'dofus5',  label:'Dofus 5',  types:['Dofus','Trophée','Objet vivant']},
+  {id:'dofus6',  label:'Dofus 6',  types:['Dofus','Trophée','Objet vivant']},
+]
+
+const STAT_GROUPS = {
+  'Caractéristiques':['Vitalité','Force','Intelligence','Agilité','Chance','Sagesse'],
+  'Combat':['Dommages','Initiative','Puissance','Critique','Soins','PA','PM','Portée','Invocation'],
+  'Retrait / Vol':['Retrait PA','Retrait PM','Vol de PA','Vol de PM','Vol de Vitalité','Tacle','Fuite'],
+  'Résistances':['Résistance Feu','Résistance Eau','Résistance Terre','Résistance Air','Résistance Neutre',
+                 '% Résistance Feu','% Résistance Eau','% Résistance Terre','% Résistance Air','% Résistance Neutre'],
+}
+
+const CLASSES = [
+  {id:1,name:'Féca',color:'#4a7ab5',c2:'#2a4a7a'},{id:2,name:'Osamodas',color:'#2d8a4e',c2:'#1a5a32'},
+  {id:3,name:'Enutrof',color:'#c8a84b',c2:'#7a6030'},{id:4,name:'Sram',color:'#6a5a8a',c2:'#3a2a5a'},
+  {id:5,name:'Xélor',color:'#7a4a9a',c2:'#4a2a6a'},{id:6,name:'Ecaflip',color:'#c85a5a',c2:'#8a2a2a'},
+  {id:7,name:'Éniripsa',color:'#5ab8c8',c2:'#2a7a8a'},{id:8,name:'Iop',color:'#c87a2a',c2:'#8a4a10'},
+  {id:9,name:'Crâ',color:'#6aaa4a',c2:'#3a7a20'},{id:10,name:'Sadida',color:'#4aaa6a',c2:'#2a7a40'},
+  {id:11,name:'Sacrieur',color:'#c84a4a',c2:'#8a1a1a'},{id:12,name:'Pandawa',color:'#c8844a',c2:'#8a5020'},
+  {id:13,name:'Roublard',color:'#8a6a5a',c2:'#5a3a2a'},{id:14,name:'Zobal',color:'#9a4a8a',c2:'#6a1a5a'},
+  {id:15,name:'Steamer',color:'#7a6a3a',c2:'#4a3a18'},{id:16,name:'Éliotrope',color:'#4a8ab8',c2:'#2a5a8a'},
+  {id:17,name:'Huppermage',color:'#d4a84a',c2:'#8a6820'},{id:18,name:'Ouginak',color:'#8a5a3a',c2:'#5a2a10'},
+  {id:20,name:'Forgelance',color:'#5a7a9a',c2:'#2a4a6a'},
+]
+
+let build = {}, statsCache = {}, setCache = {}, kamasCache = {}
+let allItems = [], mountItems = []
+let appState = {filtre:'Tous', page:1, hasMore:false, loading:false, isSearch:false, isMountMode:false, srchTmo:null, sort:'niv-desc', clsFilter:null}
+let charState = {cls:null}
+let mountState = {mount:null}
+
+// ─── Toast ───────────────────────────────────────────────────────────────────
+function toast(msg, type='ok') {
+  let t = document.getElementById('_t')
+  if (!t) {
+    t = document.createElement('div'); t.id='_t'
+    t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(14px);padding:6px 16px;border-radius:18px;font-size:.74rem;font-family:Lato,sans-serif;z-index:9999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;max-width:92vw'
+    document.body.appendChild(t)
+  }
+  const c={ok:'background:#112211;border:1px solid #52c452;color:#52c452',warn:'background:#221a08;border:1px solid #f4c95d;color:#f4c95d',info:'background:#081422;border:1px solid #4fa8c2;color:#4fa8c2'}
+  Object.assign(t.style,{border:'',color:'',background:''})
+  const s = (c[type]||c.ok).split(';')
+  s.forEach(r=>{const[k,v]=r.split(':');if(k&&v)t.style[k.trim()]=v.trim()})
+  t.textContent=msg; clearTimeout(t._t)
+  requestAnimationFrame(()=>{t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)'})
+  t._t=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(8px)'},2500)
+}
+
+// ─── Slots ────────────────────────────────────────────────────────────────────
+function updateSlot(id, item) {
+  const sl = document.getElementById('sl-'+id)
+  const ico = document.getElementById('sli-'+id)
+  const lbl = document.getElementById('sll-'+id)
+  const rm = document.getElementById('slr-'+id)
+  if (!sl || !ico) return
+  const isDof = id.startsWith('dofus')
+  const phCls = isDof ? 'sd-ph' : 'sl-ph'
+  if (item) {
+    sl.classList.add('eq')
+    ico.innerHTML = item.image_urls?.icon
+      ? `<img src="${item.image_urls.icon}" alt="">`
+      : `<span class="${phCls}">&#10022;</span>`
+    if (lbl) lbl.textContent = item.name.split(' ').slice(0,2).join(' ')
+    if (rm) rm.classList.add('vis')
+  } else {
+    sl.classList.remove('eq')
+    const def = SLOT_DEFS.find(s=>s.id===id)
+    const ph = {
+      chapeau:'&#127913;',amulette:'&#128255;',cape:'&#129405;',ceinture:'&#128996;',
+      anneau1:'&#128141;',anneau2:'&#128141;',bottes:'&#128095;',arme:'&#9876;',
+      bouclier:'&#128737;',familier:'&#128062;',
+      dofus1:'&#129704;',dofus2:'&#129704;',dofus3:'&#129704;',
+      dofus4:'&#129704;',dofus5:'&#129704;',dofus6:'&#129704;',
+    }
+    ico.innerHTML = `<span class="${phCls}">${ph[id]||'&#9670;'}</span>`
+    if (lbl) lbl.textContent = isDof ? `D${id.slice(-1)}` : (def?.label||id)
+    if (rm) rm.classList.remove('vis')
+  }
+  // Tooltip hover
+  if(sl){
+    sl.onmouseenter = item ? (e=>showSlotTip(id,item,e)) : null
+    sl.onmouseleave = item ? hideTip : null
+    sl.onmousemove  = item ? (e=>moveTip(e)) : null
+  }
+}
+
+function updateFamSlot(item) {
+  const slw = document.getElementById('slw-fam')
+  const ico = document.getElementById('slwi-fam')
+  const nm = document.getElementById('slwn-fam')
+  if (!slw) return
+  if (item) {
+    slw.classList.add('eq')
+    ico.innerHTML = item.image_urls?.icon ? `<img src="${item.image_urls.icon}" alt="">` : '<span class="slw-ph">&#128062;</span>'
+    nm.textContent = item.name
+  } else {
+    slw.classList.remove('eq')
+    ico.innerHTML = '<span class="slw-ph">&#128062;</span>'
+    nm.textContent = '—'
+  }
+}
+
+function slotAct(id) {
+  if (build[id]) return
+  const def = SLOT_DEFS.find(s=>s.id===id)
+  if (!def) return
+  const t = def.types[0]
+  if (t==='Familier'||t==='Muldo'||t==='Compagnon') { setFiltre('Familier'); return }
+  if (t==='Dofus') { setFiltre('Dofus'); return }
+  setFiltre(TYPES.includes(t) ? t : 'Tous')
+}
+
+function unequip(ev, id) {
+  if (ev&&ev.stopPropagation) ev.stopPropagation()
+  const item = build[id]
+  build[id] = null
+  updateSlot(id, null)
+  renderStats(); renderGrid()
+  if (id==='familier') { hideFam(); updateFamSlot(null) }
+  updateHoverBar()
+  if (item) toast('✕ '+item.name+' retiré','info')
+  saveBuild()
+}
+
+// ─── Stats ────────────────────────────────────────────────────────────────────
+function renderStats() {
+  const p = document.getElementById('stats-panel')
+  const eq = Object.values(build).filter(Boolean)
+  if (!eq.length) { p.innerHTML='<div class="stats-empty">&#9876; Équipe des items pour voir tes stats</div>'; return }
+  const tot = {}
+  eq.forEach(item => { (statsCache[item.ankama_id]||[]).forEach(e => { const n=e.type?.name||''; if(n) tot[n]=(tot[n]||0)+(e.int_minimum||0) }) })
+  // ── Résumé rapide ───────────────────────────────────────────
+  const eqN=eq.length, vit=tot['Vitalité']||0, pa=tot['PA']||0, pm=tot['PM']||0, dmg=tot['Dommages']||0
+  const hpTotal=55+vit*5, paTotal=6+pa, pmTotal=3+pm
+  let html=''
+  if(vit>0) html+=`<div class="hp-bar-wrap"><div class="hp-row"><span class="hp-lbl">&#9825; Points de Vie</span><span class="hp-val">${hpTotal.toLocaleString('fr')}</span></div><div class="hp-bar"><div class="hp-fill" style="width:${Math.min(100,hpTotal/5000*100).toFixed(1)}%"></div></div></div>`
+  html+=`<div class="stats-summ">`+
+    `<div class="ss-it"><span class="ss-v">${eqN}/${SLOT_DEFS.length}</span><span class="ss-l">Items</span></div>`+
+    (vit?`<div class="ss-it"><span class="ss-v p">+${vit}</span><span class="ss-l">Vitalité</span></div>`:'')+
+    `<div class="ss-it pa-b"><span class="ss-v">${paTotal}</span><span class="ss-l">PA${pa?` <small style="color:var(--green);font-size:.45rem">+${pa}</small>`:''}</span></div>`+
+    `<div class="ss-it pm-b"><span class="ss-v">${pmTotal}</span><span class="ss-l">PM${pm?` <small style="color:var(--green);font-size:.45rem">+${pm}</small>`:''}</span></div>`+
+    (dmg?`<div class="ss-it"><span class="ss-v p">+${dmg}</span><span class="ss-l">Dommages</span></div>`:'')+
+    `</div>`
+  // ── Groupes stats ────────────────────────────────────────────
+  const known = Object.values(STAT_GROUPS).flat()
+  for (const [g, ss] of Object.entries(STAT_GROUPS)) {
+    const rows = ss.filter(s=>tot[s]).map(s=>`<div class="sr"><span class="sr-n">${s}</span><span class="sr-v ${tot[s]>0?'p':'n'}">${tot[s]>0?'+':''}${tot[s]}</span></div>`).join('')
+    if (rows) html+=`<div class="sg"><div class="sg-t">${g}</div>${rows}</div>`
+  }
+  const misc = Object.entries(tot).filter(([k])=>!known.includes(k)&&tot[k])
+  if (misc.length) html+=`<div class="sg"><div class="sg-t">Divers</div>${misc.map(([k,v])=>`<div class="sr"><span class="sr-n">${k}</span><span class="sr-v ${v>0?'p':'n'}">${v>0?'+':''}${v}</span></div>`).join('')}</div>`
+  // ── Résistances visuelles ─────────────────────────────────────────────
+  const ELEMS=[
+    {k:'Résistance Feu',   pk:'% Résistance Feu',   color:'#e8602a',icon:'🔥',label:'Feu'},
+    {k:'Résistance Eau',   pk:'% Résistance Eau',   color:'#4a9fd4',icon:'💧',label:'Eau'},
+    {k:'Résistance Terre', pk:'% Résistance Terre', color:'#9a7a3a',icon:'🪨',label:'Terre'},
+    {k:'Résistance Air',   pk:'% Résistance Air',   color:'#6abf4a',icon:'💨',label:'Air'},
+    {k:'Résistance Neutre',pk:'% Résistance Neutre',color:'#9090a0',icon:'⚪',label:'Neutre'},
+  ]
+  const hasRes=ELEMS.some(e=>tot[e.k]||tot[e.pk])
+  if(hasRes){
+    html+=`<div class="res-panel"><div class="res-title">Résistances</div><div class="res-grid">`
+    ELEMS.forEach(e=>{
+      const flat=tot[e.k]||0, pct=tot[e.pk]||0
+      const total=flat+pct, pctW=Math.min(100,Math.max(0,(total+200)/400*100))
+      const valStr=(total>0?'+':'')+total
+      html+=`<div class="res-row">
+        <div class="res-icon" style="background:${e.color}22;color:${e.color}">${e.icon}</div>
+        <div class="res-bar-wrap"><div class="res-bar-fill" style="width:${pctW}%;background:${e.color}"></div></div>
+        <span class="res-val" style="color:${total>=0?e.color:'var(--red)'}">${valStr}</span>
+      </div>`
+    })
+    html+=`</div></div>`
+  }
+  // ── Panoplies ─────────────────────────────────────────────────────────
+  const setGroups={}
+  Object.values(build).filter(Boolean).forEach(item=>{
+    if(item.set?.ankama_id){
+      if(!setGroups[item.set.ankama_id]) setGroups[item.set.ankama_id]={name:item.set.name,count:0,items:[]}
+      setGroups[item.set.ankama_id].count++
+      setGroups[item.set.ankama_id].items.push(item.name)
+    }
+  })
+  const setPanos=Object.entries(setGroups).filter(([,s])=>s.count>=2)
+  if(setPanos.length){
+    html+=`<div class="pano-panel">`
+    setPanos.forEach(([sid,s])=>{
+      const cached=setCache[sid]
+      html+=`<div class="pano-card" id="pano-${sid}" onclick="togglePano('${sid}')">`+
+        `<div class="pano-head"><span class="pano-name">${s.name}</span><span class="pano-count">${s.count} pièces</span><span class="pano-chevron">▼</span></div>`+
+        `<div class="pano-body" id="panob-${sid}">`+
+          (cached?renderPanoBody(cached,s.count):`<div class="pano-loading">Chargement…</div>`)+
+        `</div></div>`
+    })
+    html+=`</div>`
+    // Fetch manquants
+    setPanos.forEach(([sid,s])=>{ if(!setCache[sid]) fetchSet(sid,s.count) })
+  }
+  // ── Kamas tracker ─────────────────────────────────────────────────────
+  const eqItems=Object.values(build).filter(Boolean)
+  if(eqItems.length){
+    let total=0; eqItems.forEach(i=>{total+=parseInt(kamasCache[i.ankama_id]||0)})
+    const fmt=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(0)+'k':String(n)
+    html+=`<div class="kamas-panel"><div class="kamas-row"><span class="kamas-lbl">&#9775; Coût estimé</span><span class="kamas-total">${total>0?fmt(total)+' K':'—'}</span></div>`+
+      `<div class="kamas-list">`+
+      eqItems.map(i=>`<div class="kamas-item"><span class="kamas-iname">${i.name}</span><input class="kamas-inp" type="number" min="0" placeholder="0" value="${kamasCache[i.ankama_id]||''}" oninput="kamasCache[${i.ankama_id}]=this.value;renderStats()" title="Prix en Kamas"><span class="kamas-unit">K</span></div>`).join('')+
+      `</div></div>`
+  }
+  p.innerHTML = html||'<div class="stats-empty">Stats à 0</div>'
+}
+
+// ─── Équipement ───────────────────────────────────────────────────────────────
+function equipItem(item, effects) {
+  statsCache[item.ankama_id] = effects
+  const type = item.type?.name || ''
+  let slot = null
+  for (const s of SLOT_DEFS) {
+    if (s.types.some(t=>type.toLowerCase().includes(t.toLowerCase())||t.toLowerCase().includes(type.toLowerCase()))) {
+      if (!build[s.id]) { slot=s.id; break }
+    }
+  }
+  if (!slot) slot = SLOT_DEFS.find(s=>s.types.some(t=>type.includes(t)||t.includes(type)))?.id
+  if (!slot) { toast('⚠ Type "'+type+'" non reconnu','warn'); return }
+  build[slot] = item
+  updateSlot(slot, item)
+  animSlot(slot, 'equip')
+  renderStats(); renderGrid()
+  toast('✓ '+item.name+' équipé','ok')
+  if (slot==='familier') { showFam(item); updateFamSlot(item) }
+  updateHoverBar(); saveBuild()
+}
+
+async function handleEquip(id, itemBasic) {
+  const ex = Object.entries(build).find(([,v])=>v?.ankama_id===id)
+  if (ex) { unequip(null, ex[0]); return }
+  if (statsCache[id]) { equipItem(itemBasic, statsCache[id]); return }
+  try {
+    const r=await fetch(API_EQ+'/'+id), data=await r.json()
+    statsCache[id]=data.effects||[]; equipItem(data, statsCache[id])
+  } catch(e) { toast('Erreur de chargement','warn') }
+}
+
+async function toggleStats(id) {
+  const el=document.getElementById('sm'+id); if(!el) return
+  if(el.dataset.o==='1'){el.classList.remove('op');el.dataset.o='0';const b=document.getElementById('bst'+id);if(b)b.textContent='Stats ↓';return}
+  if(!statsCache[id]){try{const r=await fetch(API_EQ+'/'+id),data=await r.json();statsCache[id]=data.effects||[]}catch(e){return}}
+  el.innerHTML=statsCache[id].slice(0,6).map(e=>`<li class="sm-l"><span class="sm-n">${e.type?.name}</span><span class="sm-v${e.int_minimum<0?' neg':''}">${e.formatted?.replace(e.type?.name,'').trim()||e.formatted}</span></li>`).join('')
+  el.classList.add('op');el.dataset.o='1';const b=document.getElementById('bst'+id);if(b)b.textContent='Stats ↑'
+}
+
+// ─── Grid items ───────────────────────────────────────────────────────────────
+const DOFUS_TYPES=new Set(['Dofus','Trophée','Objet vivant'])
+function getFiltered() {
+  const f=appState.filtre
+  let items=appState.isSearch?allItems:allItems.filter(i=>{
+    if(f==='Tous') return true
+    if(f==='Dofus') return DOFUS_TYPES.has(i.type?.name)
+    return i.type?.name===f
+  })
+  const mn=parseInt(document.getElementById('lmin')?.value)||0
+  const mx=parseInt(document.getElementById('lmax')?.value)||9999
+  if(mn>0||mx<9999) items=items.filter(i=>(i.level||0)>=mn&&(i.level||0)<=mx)
+  // Filtre classe
+  if(appState.clsFilter){
+    const cls=CLASSES.find(c=>c.id===appState.clsFilter)
+    if(cls) items=items.filter(i=>{
+      if(!i.conditions?.length) return true
+      // Vérif: l'item a-t-il une restriction qui exclut cette classe ?
+      return !i.conditions.some(cond=>
+        cond.elements?.some(el=>el.element?.name&&!el.element.name.includes(cls.name)&&cond.operator==='IS')
+      )
+    })
+  }
+  const s=appState.sort
+  if(s==='niv-desc') items=[...items].sort((a,b)=>(b.level||0)-(a.level||0))
+  else if(s==='niv-asc') items=[...items].sort((a,b)=>(a.level||0)-(b.level||0))
+  else if(s==='nom') items=[...items].sort((a,b)=>a.name.localeCompare(b.name,'fr'))
+  return items
+}
+
+function renderGrid() {
+  if (appState.isMountMode) { renderMountGrid(); return }
+  document.getElementById('st-load').style.display='none'
+  document.getElementById('st-empty').style.display='none'
+  const items = getFiltered()
+  if (!items.length) { document.getElementById('st-empty').style.display='block'; return }
+  document.getElementById('st-ok').style.display='block'
+  document.getElementById('grid-meta').innerHTML=`<b>${items.length}</b> ${appState.isSearch?'résultats':'items'+(appState.filtre!=='Tous'?' · '+appState.filtre:'')}`
+  const eqIds=new Set(Object.values(build).filter(Boolean).map(i=>i.ankama_id))
+  document.getElementById('grid').innerHTML=items.map(item=>{
+    const eq=eqIds.has(item.ankama_id)
+    const js=JSON.stringify(item).replace(/"/g,'&quot;')
+    return `<div class="carte${eq?' eq':''}" id="carte-${item.ankama_id}" draggable="true" ondragstart="onDragStart(event,${item.ankama_id},${JSON.stringify(item).replace(/`/g,"'")})" ondragend="onDragEnd(event)">
+      <div class="c-img" onclick="handleCarteClick(event,${item.ankama_id},${JSON.stringify(item).replace(/`/g,"'")})" style="cursor:pointer">
+        <span class="c-eq-badge">${eq?'ÉQUIPÉ':''}</span>
+        <span class="cmp-badge" id="cmpb-${item.ankama_id}" style="display:none"></span>
+        <img src="${item.image_urls?.icon||''}" alt="${item.name}" onerror="this.style.opacity='.2'">
+      </div>
+      <div class="c-body">
+        <p class="c-nom">${item.name}</p>
+        <div class="c-badges"><span class="badge niv">Niv.${item.level}</span><span class="badge typ">${item.type?.name||'?'}</span></div>
+        <ul class="smini" id="sm${item.ankama_id}" data-o="0"></ul>
+        <div class="c-btns">
+          <button class="btn-eq${eq?' done':''}" onclick="handleEquip(${item.ankama_id},${js})">${eq?'✕ Retirer':'+ Équiper'}</button>
+          <button class="btn-st" id="bst${item.ankama_id}" onclick="toggleStats(${item.ankama_id})">Stats ↓</button>
+        </div>
+      </div>
+    </div>`
+  }).join('')
+  document.getElementById('plus-wrap').style.display=(appState.hasMore&&!appState.isSearch)?'block':'none'
+}
+
+async function fetchItems(page=1, append=false) {
+  appState.loading=true; appState.isMountMode=false
+  if(!append){document.getElementById('st-load').style.display='block';document.getElementById('st-ok').style.display='none'}
+  try {
+    const r=await fetch(`${API_EQ}?page%5Bsize%5D=48&page%5Bnumber%5D=${page}`), data=await r.json()
+    appState.hasMore=!!data._links?.next; appState.page=page; appState.isSearch=false
+    allItems=append?[...allItems,...(data.items||[])]:(data.items||[])
+    renderGrid()
+  } catch(e){document.getElementById('st-empty').style.display='block';document.getElementById('st-load').style.display='none'}
+  appState.loading=false
+}
+
+async function fetchSearch(q) {
+  appState.loading=true; appState.isMountMode=false
+  document.getElementById('st-load').style.display='block'; document.getElementById('st-ok').style.display='none'
+  try {const r=await fetch(`${API_EQ}/search?query=${encodeURIComponent(q)}&limit=40`); allItems=await r.json()||[]; appState.hasMore=false; appState.isSearch=true; renderGrid()}
+  catch(e){document.getElementById('st-empty').style.display='block';document.getElementById('st-load').style.display='none'}
+  appState.loading=false
+}
+
+// ─── Grid MONTURES ────────────────────────────────────────────────────────────
+let mpg = {items:[], page:1, hasMore:true, loading:false}
+
+async function fetchMountsForGrid(append=false) {
+  appState.isMountMode=true; appState.loading=true
+  if(!append){document.getElementById('st-load').style.display='block';document.getElementById('st-ok').style.display='none';mountItems=[];mpg={items:[],page:1,hasMore:true,loading:false}}
+  try {
+    const q=document.getElementById('srch').value.trim()
+    const url=q?`${API_MT}/search?query=${encodeURIComponent(q)}&limit=40`:`${API_MT}?page%5Bsize%5D=48&page%5Bnumber%5D=${mpg.page}`
+    const r=await fetch(url), data=await r.json()
+    const nm=q?(data||[]):(data.mounts||[])
+    mountItems=append?[...mountItems,...nm]:nm; mpg.hasMore=!q&&!!data._links?.next; mpg.page++
+    renderMountGrid()
+  } catch(e){document.getElementById('st-empty').style.display='block';document.getElementById('st-load').style.display='none'}
+  appState.loading=false; mpg.loading=false
+}
+
+function renderMountGrid() {
+  document.getElementById('st-load').style.display='none'; document.getElementById('st-empty').style.display='none'
+  if(!mountItems.length){document.getElementById('st-empty').style.display='block';return}
+  document.getElementById('st-ok').style.display='block'
+  document.getElementById('grid-meta').innerHTML=`&#128014; <b>${mountItems.length}</b> montures`
+  document.getElementById('grid').innerHTML=mountItems.map(m=>{
+    const eq=mountState.mount?.ankama_id===m.ankama_id
+    const js=JSON.stringify(m).replace(/"/g,'&quot;')
+    return `<div class="carte mnt-c${eq?' eq':''}">
+      <div class="c-img">
+        <span class="c-eq-badge">${eq?'ÉQUIPÉE':''}</span>
+        <img src="${m.image_urls?.sd||m.image_urls?.icon||''}" alt="${m.name}" onerror="this.style.opacity='.2'">
+      </div>
+      <div class="c-body">
+        <p class="c-nom">${m.name}</p>
+        <div class="c-badges"><span class="badge mnt">&#128014; Monture</span>${m.family?.name?`<span class="badge">${m.family.name}</span>`:''}</div>
+        <div class="c-btns">
+          <button class="btn-mnt${eq?' done':''}" onclick="equipMount(${js})">${eq?'✕ Retirer':'&#128014; Équiper'}</button>
+        </div>
+      </div>
+    </div>`
+  }).join('')
+  document.getElementById('plus-wrap').style.display=mpg.hasMore?'block':'none'
+}
+
+// ─── Filtres ──────────────────────────────────────────────────────────────────
+function renderFiltres() {
+  const f=appState.filtre, im=appState.isMountMode
+  const lmn=document.getElementById('lmin')?.value||''
+  const lmx=document.getElementById('lmax')?.value||''
+  const cf=appState.clsFilter
+  const clsRow=`<div class="cls-filter-wrap"><span class="cls-filter-lbl">Classe</span>`+
+    `<button class="cls-fb all-btn${!cf?' on':''}" onclick="setClsFilter(null)">Tous</button>`+
+    CLASSES.map(c=>`<button class="cls-fb${cf===c.id?' on':''}" style="background:${c.color}" onclick="setClsFilter(${c.id})" title="${c.name}">${c.name[0]}</button>`).join('')+
+    `</div>`
+  document.getElementById('filtres-bar').innerHTML=clsRow+
+    `<button class="fb mnt${im?' on':''}" onclick="setFiltre('__MOUNT__')">&#128014; Montures</button>`+
+    TYPES.map(t=>{
+      const on=!im&&(f===t||(f==='Dofus'&&DOFUS_TYPES.has(t)))
+      return `<button class="fb${on?' on':''}" onclick="setFiltre('${t}')">${t}</button>`
+    }).join('')+
+    `<div class="lvl-rng"><span class="lvl-lbl">Niv.</span><input class="lvl-inp" id="lmin" type="number" placeholder="1" min="1" max="230" value="${lmn}"><span class="lvl-sep">–</span><input class="lvl-inp" id="lmax" type="number" placeholder="230" min="1" max="230" value="${lmx}"></div>`+
+    `<div class="sort-rng">`+
+    `<button class="sort-btn${appState.sort==='niv-desc'?' on':''}" onclick="setSort('niv-desc')">Niv.↓</button>`+
+    `<button class="sort-btn${appState.sort==='niv-asc'?' on':''}" onclick="setSort('niv-asc')">Niv.↑</button>`+
+    `<button class="sort-btn${appState.sort==='nom'?' on':''}" onclick="setSort('nom')">A-Z</button>`+
+    `</div>`
+  document.getElementById('lmin')?.addEventListener('input',()=>renderGrid())
+  document.getElementById('lmax')?.addEventListener('input',()=>renderGrid())
+}
+
+async function setSort(s){appState.sort=s;renderFiltres();renderGrid()}
+function setClsFilter(id){appState.clsFilter=id;renderFiltres();renderGrid()}
+
+function setFiltre(f) {
+  appState.filtre=f; appState.isSearch=false
+  document.getElementById('srch').value=''; document.getElementById('srch-clear').classList.remove('vis')
+  if(f==='__MOUNT__'){appState.isMountMode=true; renderFiltres(); await fetchMountsForGrid(false); return}
+  appState.isMountMode=false; renderFiltres(); await fetchItems(1,false)
+  if(f!=='Tous'){let p=2; while(getFiltered().length<20&&appState.hasMore&&p<=8){await fetchItems(p,true);p++}; renderGrid()}
+}
+
+function clearSearch() {
+  document.getElementById('srch').value=''; document.getElementById('srch-clear').classList.remove('vis')
+  appState.isSearch=false; if(appState.isMountMode) fetchMountsForGrid(false); else fetchItems(1,false)
+}
+
+function goFamFilter() { setFiltre('Familier') }
+
+document.getElementById('srch').addEventListener('input', e => {
+  const q=e.target.value.trim()
+  document.getElementById('srch-clear').classList.toggle('vis',q.length>0)
+  clearTimeout(appState.srchTmo)
+  if(!q){clearSearch();return}
+  appState.srchTmo=setTimeout(()=>{ appState.isMountMode?fetchMountsForGrid(false):fetchSearch(q) },380)
+})
+document.getElementById('btn-more').addEventListener('click', ()=>{
+  if(appState.loading)return
+  appState.isMountMode?fetchMountsForGrid(true):appState.hasMore&&fetchItems(appState.page+1,true)
+})
+
+// ─── Classes ──────────────────────────────────────────────────────────────────
+function selectClass(cls) {
+  charState.cls=cls
+  document.getElementById('char-empty').style.display='none'
+  document.getElementById('char-chg').style.display='block'
+  document.getElementById('ci-name').textContent=cls.name
+  // Couleurs
+  const r1=parseInt(cls.color.slice(1,3),16),g1=parseInt(cls.color.slice(3,5),16),b1=parseInt(cls.color.slice(5,7),16)
+  document.getElementById('paperdoll-zone').style.setProperty('--cls-glow',`rgba(${r1},${g1},${b1},.18)`)
+  document.getElementById('sw1').querySelector('input').value=cls.color
+  document.getElementById('sw1').style.background=cls.color
+  document.getElementById('sw2').querySelector('input').value=cls.c2
+  document.getElementById('sw2').style.background=cls.c2
+  document.body.style.setProperty('--cls',cls.color)
+  document.body.style.setProperty('--cls2',cls.c2)
+  loadCharFace(cls); saveBuild()
+}
+
+function loadCharFace(cls) {
+  const img=document.getElementById('char-img')
+  const av=document.getElementById('char-avatar')
+  img.style.display='none'; av.style.display='none'
+  // Préparer l'avatar fallback
+  av.textContent=cls.name[0].toUpperCase()
+  av.style.background=`linear-gradient(145deg,${cls.color},${cls.c2})`
+  av.style.boxShadow=`0 0 0 2px ${cls.color},0 10px 40px rgba(0,0,0,.98)`
+  const urls=[
+    `images/classes/${cls.id}.png`,
+    `https://barbofus.com/storage/images/icons/classes/faces/unity/${cls.id*10}_1.png`,
+    `https://barbofus.com/storage/images/icons/classes/faces/unity/${cls.id*10}_0.png`,
+  ]
+  let fi=0
+  const tryNext=()=>{
+    if(fi>=urls.length){ av.style.display='flex'; return }
+    const t=new Image()
+    t.onload=()=>{
+      img.src=t.src; img.style.display='block'
+      img.style.boxShadow=`0 0 0 2px ${cls.color},0 10px 40px rgba(0,0,0,.98),0 0 70px rgba(0,0,0,.35)`
+    }
+    t.onerror=()=>{ fi++; tryNext() }
+    t.src=urls[fi++]
+  }
+  tryNext()
+}
+
+function setClsColor(n, v) {
+  document.getElementById('sw'+n).style.background=v
+  if(n===1){
+    document.body.style.setProperty('--cls',v)
+    const ci=document.getElementById('char-img'); if(ci&&ci.style.display!=='none') ci.style.boxShadow=`0 0 0 2px ${v},0 10px 40px rgba(0,0,0,.98),0 0 70px rgba(0,0,0,.35)`
+    const av=document.getElementById('char-avatar'); if(av){const cls2=document.getElementById('sw2').querySelector('input').value; av.style.background=`linear-gradient(145deg,${v},${cls2})`; av.style.boxShadow=`0 0 0 2px ${v},0 10px 40px rgba(0,0,0,.98)`}
+    document.getElementById('paperdoll-zone').style.setProperty('--cls-glow',`${v}2e`)
+  }
+  if(n===2){
+    document.body.style.setProperty('--cls2',v)
+    const av=document.getElementById('char-avatar'); if(av){const cls1=document.getElementById('sw1').querySelector('input').value; av.style.background=`linear-gradient(145deg,${cls1},${v})`}
+  }
+  if(n===3) document.body.style.setProperty('--cls3',v)
+}
+
+// ─── Portrait composition ─────────────────────────────────────────────────────
+function updateCompo() {
+  const plat=document.getElementById('char-plat')
+  if(plat) plat.classList.toggle('wide', !!mountState.mount)
+  updateHoverBar()
+}
+
+function updateHoverBar() {
+  const hm=document.getElementById('hb-mount'), hf=document.getElementById('hb-fam')
+  if(hm){
+    if(mountState.mount){ hm.className='hbar-btn act'; hm.textContent='🐎 '+mountState.mount.name.split(' ').slice(0,2).join(' ') }
+    else { hm.className='hbar-btn'; hm.textContent='🐎 Monture' }
+  }
+  if(hf){
+    if(build['familier']){ hf.className='hbar-btn act'; hf.textContent='🐾 '+build['familier'].name.split(' ')[0] }
+    else { hf.className='hbar-btn'; hf.textContent='🐾 Familier' }
+  }
+}
+
+// ─── Familier ─────────────────────────────────────────────────────────────────
+function showFam(item) {
+  const layer=document.getElementById('fam-layer')
+  const img=document.getElementById('fam-img')
+  const nm=document.getElementById('fam-nm')
+  img.src=item.image_urls?.sd||item.image_urls?.icon||''
+  img.title=item.name+' — cliquer pour retirer'
+  nm.textContent=item.name.split(' ').slice(0,2).join(' ')
+  layer.classList.add('on')
+  layer.title='Cliquer pour retirer '+item.name
+  layer.onclick=()=>{ unequip(null,'familier'); toast('✕ '+item.name+' retiré','info') }
+  updateCompo()
+}
+function hideFam() {
+  const layer=document.getElementById('fam-layer')
+  if(layer){layer.classList.remove('on');setTimeout(()=>{const i=document.getElementById('fam-img');if(i)i.src=''},450)}
+  updateCompo()
+}
+
+// ─── Monture ──────────────────────────────────────────────────────────────────
+function equipMount(mount) {
+  if(mount===null){unequipMount(null);return}
+  mountState.mount=mount
+  document.getElementById('ci-sub').textContent='🐎 '+mount.name
+  const sw=document.getElementById('slw-mount'), ico=document.getElementById('slwi-mount'), nm=document.getElementById('slwn-mount')
+  sw.classList.add('eq')
+  ico.innerHTML=`<img src="${mount.image_urls?.sd||mount.image_urls?.icon||''}" alt="" style="border-radius:4px;width:34px;height:34px;object-fit:contain">`
+  nm.textContent=mount.name
+  updateCompo(); toast('🐎 '+mount.name+' équipée !','ok')
+  if(appState.isMountMode) renderGrid()
+  saveBuild()
+}
+function unequipMount(ev) {
+  if(ev&&ev.stopPropagation) ev.stopPropagation()
+  if(!mountState.mount) return
+  const nm=mountState.mount.name; mountState.mount=null
+  document.getElementById('ci-sub').textContent=''
+  const sw=document.getElementById('slw-mount'), ico=document.getElementById('slwi-mount'), wnm=document.getElementById('slwn-mount')
+  sw.classList.remove('eq'); ico.innerHTML='<span class="slw-ph">&#128014;</span>'; wnm.textContent='—'
+  updateCompo(); toast('✕ '+nm+' retirée','info')
+  if(appState.isMountMode) renderGrid()
+}
+
+// ─── Mount picker modal ───────────────────────────────────────────────────────
+let mpd={items:[],page:1,hasMore:true,loading:false,q:''}
+async function openMountPicker() {
+  if(document.getElementById('mp-ov'))return
+  const ov=document.createElement('div'); ov.className='modal-ov'; ov.id='mp-ov'
+  ov.onclick=e=>{if(e.target===ov)closeMountPicker()}
+  ov.innerHTML=`<div class="mbox">
+    <p class="m-title">&#128014; Choisir une Monture</p>
+    <input class="m-srch" id="mp-s" placeholder="Rechercher une monture..." autocomplete="off">
+    <div class="mgrid3" id="mp-g"><div style="grid-column:1/-1;text-align:center;padding:2rem"><div class="spinner" style="margin:0 auto .5rem;width:26px;height:26px;border-width:2px"></div>Chargement…</div></div>
+    <button class="m-more" id="mp-m" style="display:none">Charger plus ↓</button>
+    ${mountState.mount?`<button class="m-danger" onclick="unequipMount(null);closeMountPicker()">&#10005; Retirer la monture</button>`:''}
+    <button class="m-close" onclick="closeMountPicker()">Fermer</button>
+  </div>`
+  document.body.appendChild(ov)
+  mpd={items:[],page:1,hasMore:true,loading:false,q:''}
+  await loadMPd()
+  const se=document.getElementById('mp-s')
+  se?.addEventListener('input',e=>{clearTimeout(mpd._t);mpd.q=e.target.value.trim();mpd._t=setTimeout(async()=>{mpd.items=[];mpd.page=1;mpd.hasMore=true;await loadMPd()},340)})
+  document.getElementById('mp-m')?.addEventListener('click',loadMPd)
+}
+async function loadMPd() {
+  if(mpd.loading||!mpd.hasMore)return; mpd.loading=true
+  try {
+    const url=mpd.q?`${API_MT}/search?query=${encodeURIComponent(mpd.q)}&limit=24`:`${API_MT}?page%5Bsize%5D=21&page%5Bnumber%5D=${mpd.page}`
+    const r=await fetch(url), data=await r.json()
+    const nm=mpd.q?(data||[]):(data.mounts||[])
+    mpd.items=[...mpd.items,...nm]; mpd.hasMore=!mpd.q&&!!data._links?.next; mpd.page++
+    const g=document.getElementById('mp-g'), mb=document.getElementById('mp-m'); if(!g)return
+    if(!mpd.items.length){g.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:1.5rem">Aucune monture</div>';if(mb)mb.style.display='none';return}
+    g.innerHTML=mpd.items.map(m=>{
+      const sel=mountState.mount?.ankama_id===m.ankama_id
+      return `<div class="mcard${sel?' sel':''}" onclick="equipMount(${JSON.stringify(m).replace(/"/g,'&quot;')});closeMountPicker()">
+        <img src="${m.image_urls?.sd||m.image_urls?.icon||''}" alt="${m.name}" onerror="this.style.opacity='.2'">
+        <span class="mcard-nm">${m.name}</span><span class="mcard-sub">${m.family?.name||''}</span>
+      </div>`
+    }).join('')
+    if(mb)mb.style.display=mpd.hasMore?'block':'none'
+  } catch(e){const g=document.getElementById('mp-g');if(g)g.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--red);padding:1rem">Erreur</div>'}
+  mpd.loading=false
+}
+function closeMountPicker(){const e=document.getElementById('mp-ov');if(e)e.remove()}
+
+// ─── Class picker modal ───────────────────────────────────────────────────────
+function openClassPicker() {
+  if(document.getElementById('cp-ov'))return
+  const ov=document.createElement('div'); ov.className='modal-ov'; ov.id='cp-ov'
+  ov.onclick=e=>{if(e.target===ov)closeClassPicker()}
+  ov.innerHTML=`<div class="mbox" style="width:430px">
+    <p class="m-title">&#9876; Choisir une Classe</p>
+    <div class="mgrid4">${CLASSES.map(cls=>{
+      const sel=charState.cls?.id===cls.id
+      const fu=`https://barbofus.com/storage/images/icons/classes/faces/unity/${cls.id*10}_1.png`
+      return `<div class="mcard${sel?' sel':''}" onclick="selectClass(${JSON.stringify(cls).replace(/"/g,'&quot;')});closeClassPicker()">
+        <img src="${fu}" alt="${cls.name}" onerror="this.style.display='none';this.nextSibling.style.display='flex'" style="width:48px;height:48px">
+        <div style="width:48px;height:48px;border-radius:50%;background:${cls.color};display:none;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:1.2rem;color:#fff">${cls.name[0]}</div>
+        <span class="mcard-nm">${cls.name}</span>
+      </div>`
+    }).join('')}</div>
+    <button class="m-close" onclick="closeClassPicker()">Fermer</button>
+  </div>`
+  document.body.appendChild(ov)
+}
+function closeClassPicker(){const e=document.getElementById('cp-ov');if(e)e.remove()}
+
+
+// ─── Sauvegarde auto ─────────────────────────────────────────────────────────
+function saveBuild() {
+  try {
+    const ids=new Set(Object.values(build).filter(Boolean).map(i=>i.ankama_id))
+    if(mountState.mount) ids.add(mountState.mount.ankama_id)
+    const sc=Object.fromEntries(Object.entries(statsCache).filter(([k])=>ids.has(parseInt(k))))
+    localStorage.setItem('dsb_v1',JSON.stringify({
+      cls:charState.cls, build, mount:mountState.mount, statsCache:sc,
+      name:document.getElementById('ci-name')?.textContent||'Mon Build'
+    }))
+  } catch(e){}
+}
+
+function loadBuild() {
+  try {
+    const raw=localStorage.getItem('dsb_v1'); if(!raw) return
+    const d=JSON.parse(raw)
+    if(d.statsCache) Object.assign(statsCache,d.statsCache)
+    if(d.cls) selectClass(d.cls)
+    if(d.build) {
+      Object.entries(d.build).forEach(([k,v])=>{
+        if(!v) return
+        build[k]=v; updateSlot(k,v)
+        if(k==='familier'){ showFam(v); updateFamSlot(v) }
+      })
+    }
+    if(d.mount) equipMount(d.mount)
+    if(d.name){ const n=document.getElementById('ci-name'); if(n) n.textContent=d.name }
+    renderStats()
+  } catch(e){ localStorage.removeItem('dsb_v1') }
+}
+
+function exportBuild() {
+  try {
+    const data={
+      cls:charState.cls?.id,
+      build:Object.fromEntries(Object.entries(build).filter(([,v])=>v).map(([k,v])=>[k,v.ankama_id])),
+      mount:mountState.mount?.ankama_id,
+      name:document.getElementById('ci-name')?.textContent||'Mon Build'
+    }
+    const hash=btoa(unescape(encodeURIComponent(JSON.stringify(data))))
+    const url=location.href.split('#')[0]+'#build='+hash
+    if(navigator.clipboard) navigator.clipboard.writeText(url).then(()=>toast('&#128279; Lien copié !','ok')).catch(()=>prompt('Lien du build :',url))
+    else prompt('Lien du build :',url)
+  } catch(e){ toast('Erreur export','warn') }
+}
+
+function resetBuild() {
+  if(!confirm('Réinitialiser tout le build ?')) return
+  SLOT_DEFS.forEach(s=>{ build[s.id]=null; updateSlot(s.id,null) })
+  if(mountState.mount){ mountState.mount=null; document.getElementById('ci-sub').textContent=''; const sw=document.getElementById('slw-mount'),ico=document.getElementById('slwi-mount'),nm=document.getElementById('slwn-mount'); if(sw)sw.classList.remove('eq'); if(ico)ico.innerHTML='<span class="slw-ph">&#128014;</span>'; if(nm)nm.textContent='—' }
+  hideFam(); updateFamSlot(null)
+  statsCache={}; renderStats(); renderGrid()
+  localStorage.removeItem('dsb_v1')
+  toast('Build réinitialisé','info')
+}
+
+function editBuildName() {
+  const el=document.getElementById('ci-name'); if(!el) return
+  el.contentEditable='true'; el.focus()
+  const r=document.createRange(); r.selectNodeContents(el)
+  window.getSelection().removeAllRanges(); window.getSelection().addRange(r)
+  const done=()=>{ el.contentEditable='false'; if(!el.textContent.trim()) el.textContent='Mon Build'; saveBuild() }
+  const key=(e)=>{ if(e.key==='Enter'||e.key==='Escape'){ e.preventDefault(); el.blur() } }
+  el.addEventListener('blur',done,{once:true}); el.addEventListener('keydown',key)
+}
+
+
+// ─── Modal détail item ──────────────────────────────────────────────────────
+async function openItemModal(id, item) {
+  if(document.getElementById('im-ov')) return
+  // Charger effets complets si pas en cache
+  if(!statsCache[id]){
+    try{
+      const r=await fetch(`${API_EQ}/${id}`)
+      const data=await r.json()
+      statsCache[id]=data.effects||[]
+      if(data.image_urls) item.image_urls=data.image_urls
+    }catch(e){}
+  }
+  const effects=statsCache[id]||[]
+  const isEq=Object.values(build).some(v=>v?.ankama_id===id)
+  const ov=document.createElement('div'); ov.className='item-modal-ov'; ov.id='im-ov'
+  ov.onclick=e=>{if(e.target===ov)ov.remove()}
+  // Grouper les effets par catégorie
+  const cats={'Caractéristiques':[],'Combat':[],'Résistances':[],'Retrait / Vol':[]}
+  effects.forEach(e=>{
+    const n=e.type?.name||''
+    if(n.includes('Résistance')) cats['Résistances'].push(e)
+    else if(n.includes('Retrait')||n.includes('Vol de')||n.includes('Tacle')||n.includes('Fuite')) cats['Retrait / Vol'].push(e)
+    else if(['PA','PM','Portée','Initiative','Puissance','Critique','Soins','Dommages','Invocation'].includes(n)) cats['Combat'].push(e)
+    else cats['Caractéristiques'].push(e)
+  })
+  const statsHtml=Object.entries(cats).filter(([,es])=>es.length).map(([g,es])=>
+    `<div class="im-sg"><div class="im-gt">${g}</div>${es.map(e=>{
+      const v=e.int_minimum||0; const neg=v<0
+      return `<div class="im-row"><span class="im-rn">${e.type?.name||''}</span><span class="im-rv ${neg?'n':'p'}">${neg?'':'+'}${v}</span></div>`
+    }).join('')}</div>`
+  ).join('')||'<p style="color:var(--dim);font-size:.7rem;text-align:center;padding:.5rem 0">Aucun effet</p>'
+  ov.innerHTML=`<div class="ibox">
+    <div class="im-head">
+      <div class="im-ico"><img src="${item.image_urls?.icon||''}" alt="" onerror="this.style.opacity='.2'"></div>
+      <div class="im-info">
+        <div class="im-nom">${item.name}</div>
+        <div class="im-badges">
+          <span class="badge niv">Niv.${item.level||'?'}</span>
+          <span class="badge typ">${item.type?.name||'?'}</span>
+          ${isEq?'<span class="badge" style="color:var(--gold);border-color:rgba(244,201,93,.4)">&#10003; Équipé</span>':''}
+        </div>
+      </div>
+    </div>
+    <div class="im-body">${statsHtml}</div>
+    <div class="im-btns">
+      <button class="btn-eq${isEq?' done':''}" style="flex:2;font-size:.72rem" onclick="handleEquip(${id},${JSON.stringify(item).replace(/"/g,'&quot;')});document.getElementById('im-ov')?.remove()">${isEq?'&#10005; Retirer':'+ Équiper'}</button>
+      <button class="btn-st" style="font-size:.72rem" onclick="document.getElementById('im-ov').remove()">Fermer</button>
+    </div>
+  </div>`
+  document.body.appendChild(ov)
+}
+
+
+
+
+
+// ─── Comparaison d'items ──────────────────────────────────────────────────────
+let cmpSelection=[]
+
+function handleCarteClick(e, id, item) {
+  if(e.shiftKey){ toggleCmpSelect(id, item); return }
+  openItemModal(id, item)
+}
+
+function toggleCmpSelect(id, item) {
+  const idx=cmpSelection.findIndex(x=>x.id===id)
+  if(idx>=0){
+    cmpSelection.splice(idx,1)
+    updateCmpBadge(id, null)
+  } else {
+    if(cmpSelection.length>=2){
+      const old=cmpSelection.shift()
+      updateCmpBadge(old.id, null)
+    }
+    cmpSelection.push({id, item})
+    updateCmpBadge(id, cmpSelection.length)
+  }
+  if(cmpSelection.length===2) openCmpModal()
+}
+
+function updateCmpBadge(id, n) {
+  const b=document.getElementById('cmpb-'+id), c=document.getElementById('carte-'+id)
+  if(b){ b.style.display=n?'block':'none'; b.textContent=n?n+'/2':'' }
+  if(c){ n?c.classList.add('cmp-sel'):c.classList.remove('cmp-sel') }
+}
+
+function openCmpModal() {
+  if(document.getElementById('cmp-ov')) document.getElementById('cmp-ov').remove()
+  const [a,b]=cmpSelection
+  if(!a||!b) return
+  const efA=statsCache[a.id]||[], efB=statsCache[b.id]||[]
+  // Collecter toutes les stats des 2 items
+  const allStats=new Set([...efA,...efB].map(e=>e.type?.name).filter(Boolean))
+  const getVal=(ef,stat)=>{ const e=ef.find(x=>x.type?.name===stat); return e?e.int_minimum||0:0 }
+  const ov=document.createElement('div');ov.className='cmp-ov';ov.id='cmp-ov'
+  ov.onclick=e=>{if(e.target===ov){ov.remove();clearCmp()}}
+  const colA=buildCmpCol(a.item, efA, allStats, getVal, efB)
+  const colB=buildCmpCol(b.item, efB, allStats, getVal, efA)
+  ov.innerHTML=`<div class="cmp-box">
+    <div class="cmp-head"><h3>&#9878; Comparaison</h3><button class="btn-st" onclick="document.getElementById('cmp-ov').remove();clearCmp()">&#10005;</button></div>
+    <p class="cmp-hint">Shift+clic sur une carte pour comparer · Vert = meilleur</p>
+    <div class="cmp-cols">${colA}${colB}</div>
+  </div>`
+  document.body.appendChild(ov)
+}
+
+function buildCmpCol(item, ef, allStats, getVal, efOther) {
+  let rows=''
+  allStats.forEach(stat=>{
+    const v=getVal(ef,stat), vo=getVal(efOther,stat)
+    const diff=v-vo
+    let cls=diff===0?'eq':diff>0?'better':'worse'
+    const sign=v>0?'+':''
+    if(v!==0||vo!==0) rows+=`<div class="cmp-stat-row"><span class="cmp-sn">${stat}</span><span class="cmp-sv ${cls}">${sign}${v}${diff!==0?` <small style="font-size:.5rem">(${diff>0?'+':''}${diff})</small>`:''}</span></div>`
+  })
+  return `<div class="cmp-col">
+    <div class="cmp-item-head">
+      <div class="cmp-ico"><img src="${item.image_urls?.icon||''}" alt="" onerror="this.style.opacity='.2'"></div>
+      <div><div class="cmp-iname">${item.name}</div><div class="cmp-imeta">Niv.${item.level} · ${item.type?.name||''}</div></div>
+    </div>
+    ${rows||'<p style="color:var(--dim);font-size:.65rem;text-align:center;padding:.5rem 0">Aucune stat</p>'}
+  </div>`
+}
+
+function clearCmp(){
+  cmpSelection.forEach(x=>updateCmpBadge(x.id,null))
+  cmpSelection=[]
+}
+
+// ─── Export PNG ───────────────────────────────────────────────────────────────
+async function exportPNG() {
+  if(typeof html2canvas==='undefined'){toast('⚠ html2canvas non chargé','warn');return}
+  const el=document.getElementById('app')||document.querySelector('.layout')
+  if(!el){toast('⚠ Élément introuvable','warn');return}
+  toast('📷 Génération…','info')
+  try {
+    const canvas=await html2canvas(el,{backgroundColor:'#080e16',scale:2,useCORS:true,logging:false})
+    const link=document.createElement('a')
+    const name=(document.getElementById('ci-name')?.textContent||'build').replace(/\s+/g,'_')
+    link.download=`dofus_build_${name}.png`
+    link.href=canvas.toDataURL('image/png')
+    link.click()
+    toast('✓ Image téléchargée !','ok')
+  } catch(e){ toast('⚠ Erreur export','warn'); console.error(e) }
+}
+
+
+// ─── Drag & Drop ──────────────────────────────────────────────────────────────
+let dragItem = null
+
+function onDragStart(e, id, item) {
+  dragItem = {id, item}
+  e.dataTransfer.effectAllowed = 'copy'
+  e.dataTransfer.setData('text/plain', String(id))
+  setTimeout(()=>{ const c=document.getElementById('carte-'+id); if(c) c.classList.add('dragging') }, 0)
+}
+
+function onDragEnd(e) {
+  if(dragItem) { const c=document.getElementById('carte-'+dragItem.id); if(c) c.classList.remove('dragging') }
+  dragItem=null
+  document.querySelectorAll('.sl,.sd').forEach(el=>el.classList.remove('drag-over','drag-reject'))
+}
+
+function initDragDrop() {
+  SLOT_DEFS.forEach(s=>{
+    const el=document.getElementById('sl-'+s.id)
+    if(!el) return
+    el.addEventListener('dragover', e=>{
+      if(!dragItem) return
+      e.preventDefault()
+      const ok=canDropOnSlot(dragItem.item, s.id)
+      el.classList.toggle('drag-over', ok)
+      el.classList.toggle('drag-reject', !ok)
+      e.dataTransfer.dropEffect = ok ? 'copy' : 'none'
+    })
+    el.addEventListener('dragleave', ()=>el.classList.remove('drag-over','drag-reject'))
+    el.addEventListener('drop', e=>{
+      e.preventDefault()
+      el.classList.remove('drag-over','drag-reject')
+      if(!dragItem) return
+      if(!canDropOnSlot(dragItem.item, s.id)){ animSlot(s.id,'shake'); toast('⚠ Type incompatible','warn'); return }
+      // Fetch stats si pas en cache
+      if(statsCache[dragItem.id]){ equipItemToSlot(dragItem.item, statsCache[dragItem.id], s.id) }
+      else {
+        fetch(API_EQ+'/'+dragItem.id).then(r=>r.json()).then(data=>{
+          statsCache[data.ankama_id]=data.effects||[]
+          equipItemToSlot(dragItem.item, data.effects||[], s.id)
+        }).catch(()=>toast('⚠ Erreur réseau','warn'))
+      }
+    })
+  })
+}
+
+function canDropOnSlot(item, slotId) {
+  const s=SLOT_DEFS.find(x=>x.id===slotId)
+  if(!s) return false
+  const type=item.type?.name||''
+  return s.types.some(t=>type.toLowerCase().includes(t.toLowerCase())||t.toLowerCase().includes(type.toLowerCase()))
+}
+
+function equipItemToSlot(item, effects, slotId) {
+  statsCache[item.ankama_id]=effects
+  build[slotId]=item
+  updateSlot(slotId, item)
+  animSlot(slotId,'equip')
+  if(slotId==='familier'){ showFam(item); updateFamSlot(item) }
+  renderStats(); renderGrid()
+  toast('✓ '+item.name+' équipé','ok')
+}
+
+// ─── Animations slot ──────────────────────────────────────────────────────────
+function animSlot(id, type) {
+  const el=document.getElementById('sl-'+id)
+  if(!el) return
+  const cls=type==='equip'?'anim-equip':'anim-shake'
+  el.classList.remove('anim-equip','anim-shake')
+  void el.offsetWidth // force reflow
+  el.classList.add(cls)
+  setTimeout(()=>el.classList.remove(cls), type==='equip'?600:400)
+}
+
+// ─── Tooltip slot ─────────────────────────────────────────────────────────────
+const TIP_STATS=['Vitalité','Force','Intelligence','Agilité','Chance','PA','PM','Dommages','Puissance','Critique','Soins','Portée']
+function showSlotTip(id, item, e) {
+  const tip=document.getElementById('sl-tip'), box=document.getElementById('sl-tip-box')
+  if(!tip||!box) return
+  const effects=statsCache[item.ankama_id]||[]
+  const top=effects.filter(ef=>TIP_STATS.includes(ef.type?.name)&&(ef.int_minimum||0)!==0)
+    .sort((a,b)=>Math.abs(b.int_minimum||0)-Math.abs(a.int_minimum||0)).slice(0,6)
+  let html=`<div class="st-nom">${item.name}</div>`
+  if(top.length){
+    top.forEach(ef=>{
+      const v=ef.int_minimum||0
+      html+=`<div class="st-row"><span class="st-n">${ef.type.name}</span><span class="st-v ${v>0?'p':'n'}">${v>0?'+':''}${v}</span></div>`
+    })
+    html+=`<div class="st-sep"></div>`
+  }
+  html+=`<div class="st-meta">Niv.${item.level} · ${item.type?.name||''}</div>`
+  box.innerHTML=html
+  tip.classList.add('show')
+  moveTip(e)
+}
+function moveTip(e){const t=document.getElementById('sl-tip');if(!t)return;const x=e.clientX+14,y=e.clientY-10,w=t.offsetWidth,h=t.offsetHeight;t.style.left=(x+w>window.innerWidth-8?x-w-20:x)+'px';t.style.top=(y+h>window.innerHeight-8?y-h-4:y)+'px'}
+function hideTip(){const t=document.getElementById('sl-tip');if(t)t.classList.remove('show')}
+
+// ─── Multi-builds ─────────────────────────────────────────────────────────────
+const MAX_BUILDS=6
+function getBuildsStore(){try{return JSON.parse(localStorage.getItem('dsb_builds')||'[]')}catch(e){return[]}}
+function saveBuildsStore(arr){localStorage.setItem('dsb_builds',JSON.stringify(arr))}
+
+function openBuildsModal(){
+  if(document.getElementById('builds-ov')) return
+  const ov=document.createElement('div');ov.className='builds-ov';ov.id='builds-ov'
+  ov.onclick=e=>{if(e.target===ov)ov.remove()}
+  document.body.appendChild(ov);renderBuildsModal()
+}
+
+function renderBuildsModal(){
+  const ov=document.getElementById('builds-ov');if(!ov) return
+  const builds=getBuildsStore()
+  const curName=document.getElementById('ci-name')?.textContent||'Mon Build'
+  let html=`<div class="builds-box"><div class="bld-head"><h3>&#128196; Mes Builds</h3><button class="btn-st" onclick="document.getElementById('builds-ov').remove()">&#10005;</button></div><div class="bld-list">`
+  if(!builds.length) html+=`<p style="color:var(--dim);font-size:.7rem;text-align:center;padding:.8rem 0">Aucun build sauvegardé</p>`
+  builds.forEach((b,i)=>{
+    const eq=Object.values(b.build||{}).filter(Boolean).length
+    const isCur=b.name===curName
+    html+=`<div class="bld-card${isCur?' active':''}" onclick="loadBuildSlot(${i})">
+      <div class="bld-dot" style="background:${b.cls?.color||'#888'}"></div>
+      <div class="bld-info"><div class="bld-nm">${b.name}</div><div class="bld-meta">${b.cls?.name||'?'} · ${eq} items</div></div>
+      <div class="bld-acts"><button class="bld-del" onclick="event.stopPropagation();deleteBuildSlot(${i})">&#128465;</button></div>
+    </div>`
+  })
+  html+=`</div>`
+  html+= builds.length<MAX_BUILDS
+    ? `<div class="bld-new"><button class="btn-eq" style="flex:1;font-size:.7rem" onclick="saveCurrentBuildSlot()">&#43; Sauvegarder le build actuel</button></div>`
+    : `<div class="bld-new"><p style="color:var(--dim);font-size:.65rem;text-align:center">${MAX_BUILDS}/${MAX_BUILDS} builds — supprimez-en un</p></div>`
+  html+=`</div>`
+  ov.innerHTML=html
+}
+
+function saveCurrentBuildSlot(){
+  const builds=getBuildsStore()
+  const ids=new Set(Object.values(build).filter(Boolean).map(i=>i.ankama_id))
+  if(mountState.mount) ids.add(mountState.mount.ankama_id)
+  const sc=Object.fromEntries(Object.entries(statsCache).filter(([k])=>ids.has(parseInt(k))))
+  builds.push({name:document.getElementById('ci-name')?.textContent||'Mon Build',cls:charState.cls,build:JSON.parse(JSON.stringify(build)),mount:mountState.mount,statsCache:sc,savedAt:Date.now()})
+  saveBuildsStore(builds);toast('&#128196; Build sauvegardé !','ok');renderBuildsModal()
+}
+
+function loadBuildSlot(i){
+  const builds=getBuildsStore();const d=builds[i];if(!d) return
+  SLOT_DEFS.forEach(s=>{build[s.id]=null;updateSlot(s.id,null)})
+  mountState.mount=null;hideFam();updateFamSlot(null);statsCache={}
+  if(d.statsCache) Object.assign(statsCache,d.statsCache)
+  if(d.cls) selectClass(d.cls)
+  if(d.build) Object.entries(d.build).forEach(([k,v])=>{if(!v)return;build[k]=v;updateSlot(k,v);if(k==='familier'){showFam(v);updateFamSlot(v)}})
+  if(d.mount) equipMount(d.mount)
+  if(d.name){const n=document.getElementById('ci-name');if(n) n.textContent=d.name}
+  renderStats();document.getElementById('builds-ov')?.remove();toast('&#128196; '+d.name+' chargé !','ok')
+}
+
+function deleteBuildSlot(i){
+  const builds=getBuildsStore();builds.splice(i,1);saveBuildsStore(builds);renderBuildsModal()
+}
+
+// ─── Panoplies ─────────────────────────────────────────────────────────────────
+function renderPanoBody(setData, equipped) {
+  if(!setData?.effects?.length) return '<div class="pano-loading">Aucun bonus</div>'
+  let html=''
+  setData.effects.forEach(bonus=>{
+    const n=bonus.min_items||2
+    const active=equipped>=n
+    html+=`<div class="pano-bonus"><div class="pano-bh"><span class="pano-bi${active?' pano-bactive':''}">${n} pièces</span></div>`
+    if(bonus.effects?.length){
+      html+=`<div class="pano-bstat">`+
+        bonus.effects.map(e=>{
+          const v=e.int_minimum||0
+          return `<span style="color:var(--dim)">${e.type?.name||''} </span><span>${v>0?'+':''}${v}</span> `
+        }).join('')+
+      `</div>`
+    }
+    html+=`</div>`
+  })
+  return html
+}
+
+async function fetchSet(sid, equipped) {
+  try {
+    const r=await fetch(`${API_SETS}/${sid}`)
+    const data=await r.json()
+    setCache[sid]=data
+    const body=document.getElementById(`panob-${sid}`)
+    if(body) body.innerHTML=renderPanoBody(data, equipped)
+  } catch(e){}
+}
+
+function togglePano(sid) {
+  const card=document.getElementById(`pano-${sid}`)
+  if(card) card.classList.toggle('open')
+}
+
+// ─── Import build depuis URL hash ─────────────────────────────────────────────
+async function importFromHash() {
+  const m=location.hash.match(/[#&]build=([^&]+)/); if(!m) return false
+  let data; try{data=JSON.parse(decodeURIComponent(escape(atob(m[1]))))}catch(e){return false}
+  if(!data?.build) return false
+  const ov=document.createElement('div'); ov.className='import-ov'
+  ov.innerHTML=`<div class="import-box"><h3>&#128279; Chargement du build</h3><p>Récupération des items…</p><div class="import-prog"><div class="import-fill" id="imp-fill" style="width:0%"></div></div></div>`
+  document.body.appendChild(ov)
+  if(data.cls){const cls=CLASSES.find(c=>c.id===data.cls);if(cls) selectClass(cls)}
+  if(data.name){const n=document.getElementById('ci-name');if(n) n.textContent=data.name}
+  const entries=Object.entries(data.build||{})
+  const total=entries.length+(data.mount?1:0)||1
+  let done=0
+  const fill=()=>{const e=document.getElementById('imp-fill');if(e)e.style.width=Math.round(done/total*100)+'%'}
+  for(const [slot,aid] of entries){
+    try{
+      const r=await fetch(`${API_EQ}/${aid}`); const item=await r.json()
+      if(item?.ankama_id){statsCache[item.ankama_id]=item.effects||[];build[slot]=item;updateSlot(slot,item);if(slot==='familier'){showFam(item);updateFamSlot(item)}}
+    }catch(e){}
+    done++;fill()
+  }
+  if(data.mount){
+    try{const r=await fetch(`${API_MT}/${data.mount}`);const mt=await r.json();if(mt?.ankama_id) equipMount(mt)}catch(e){}
+    done++;fill()
+  }
+  ov.remove(); renderStats()
+  history.replaceState(null,'',location.href.split('#')[0])
+  toast('&#128279; Build importé !','ok')
+  return true
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+renderFiltres(); fetchItems(1,false); initDragDrop()
+setTimeout(async()=>{const ok=await importFromHash();if(!ok) loadBuild()},350)
+</script>
+<div class="sl-tip" id="sl-tip"><div class="sl-tip-box" id="sl-tip-box"></div></div>
+</body>
+</html>
+                                                                                                                                                                                                                                                    
