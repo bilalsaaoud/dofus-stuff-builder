@@ -619,6 +619,9 @@ h1{font-family:'Cinzel',serif;font-size:1.4rem;color:var(--gold);letter-spacing:
 .kamas-inp:focus{border-color:rgba(255,210,100,.5);outline:none}
 .kamas-unit{font-size:.52rem;color:var(--dim)}
 
+
+.kamas-est{font-size:.65rem;font-weight:700;color:#ffd264;min-width:60px;text-align:right;flex-shrink:0}
+
 footer{flex-shrink:0;text-align:center;padding:.45rem;border-top:1px solid var(--border);font-size:.58rem;color:var(--border2);letter-spacing:.04em}
 footer b{color:var(--gold-d)}
 @media(max-width:680px){.main{flex-direction:column}.panel-build{width:100%;border-right:none;border-bottom:1px solid var(--border)}.paperdoll-zone{grid-template-columns:58px 1fr 58px}.sl{width:58px;height:58px}body{overflow:auto}.app{height:auto}}
@@ -1016,19 +1019,77 @@ function renderStats() {
   // ── Kamas tracker ─────────────────────────────────────────────────────
   const eqItems=Object.values(build).filter(Boolean)
   if(eqItems.length){
-    let total=0; eqItems.forEach(i=>{total+=parseInt(kamasCache[i.ankama_id]||0)})
-    const fmt=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(0)+'k':String(n)
-    html+=`<div class="kamas-panel"><div class="kamas-row"><span class="kamas-lbl">&#9775; Coût estimé</span><span class="kamas-total">${total>0?fmt(total)+' K':'—'}</span></div>`+
+    let total=0
+    // Auto-estimer les items sans prix
+    eqItems.forEach(i=>{ if(!kamasCache[i.ankama_id]) kamasCache[i.ankama_id]=estimatePrice(i) })
+    eqItems.forEach(i=>{total+=parseInt(kamasCache[i.ankama_id]||0)})
+    html+=`<div class="kamas-panel"><div class="kamas-row"><span class="kamas-lbl">&#9775; Coût estimé</span><span class="kamas-total">${fmtKamas(total)}</span></div>`+
       `<div class="kamas-list">`+
-      eqItems.map(i=>`<div class="kamas-item"><span class="kamas-iname">${i.name}</span><input class="kamas-inp" type="number" min="0" placeholder="0" value="${kamasCache[i.ankama_id]||''}" oninput="kamasCache[${i.ankama_id}]=this.value;renderStats()" title="Prix en Kamas"><span class="kamas-unit">K</span></div>`).join('')+
+      eqItems.map(i=>{
+        const p=parseInt(kamasCache[i.ankama_id]||0)
+        return `<div class="kamas-item"><span class="kamas-iname">${i.name}</span><span class="kamas-est">${fmtKamas(p)}</span></div>`
+      }).join('')+
       `</div></div>`
   }
   p.innerHTML = html||'<div class="stats-empty">Stats à 0</div>'
 }
 
+
+// ─── Estimation prix automatique ──────────────────────────────────────────────
+// Prix connus par ankama_id (en kamas)
+const KNOWN_PRICES = {
+  // Dofus
+  8734:1000000000,  // Dofus Turquoise
+  8736:300000000,   // Dofus Pourpre
+  8737:400000000,   // Dofus Émeraude
+  8738:500000000,   // Dofus Ivoire
+  9051:200000000,   // Dofus de Glace
+  10386:800000000,  // Dofus Ocre
+  11239:150000000,  // Dofus Nébuleux
+  22407:250000000,  // Dofus Vulbis
+  22408:120000000,  // Dofus Cawotte
+  22409:80000000,   // Dofus Pourpre (variante)
+}
+
+function estimatePrice(item) {
+  if(!item) return 0
+  // Prix connu exact
+  if(KNOWN_PRICES[item.ankama_id]) return KNOWN_PRICES[item.ankama_id]
+  const lvl = item.level||1
+  const type = item.type?.name||''
+  // Multiplicateur par type
+  let mult = 1
+  if(type==='Dofus'||type==='Trophée') mult = 15
+  else if(type==='Objet vivant') mult = 8
+  else if(['Épée','Arc','Bâton','Marteau','Hache'].includes(type)) mult = 1.4
+  else if(type==='Familier'||type==='Muldo') mult = 2
+  // Formule exponentielle par niveau
+  let base = 0
+  if(lvl<=20)       base=500
+  else if(lvl<=40)  base=3000
+  else if(lvl<=60)  base=15000
+  else if(lvl<=80)  base=80000
+  else if(lvl<=100) base=350000
+  else if(lvl<=120) base=1200000
+  else if(lvl<=140) base=4000000
+  else if(lvl<=160) base=12000000
+  else if(lvl<=180) base=35000000
+  else if(lvl<=200) base=90000000
+  else              base=150000000
+  return Math.round(base * mult)
+}
+
+function fmtKamas(n) {
+  if(n>=1e9) return (n/1e9).toFixed(2)+'Gk'
+  if(n>=1e6) return (n/1e6).toFixed(1)+'Mk'
+  if(n>=1e3) return (n/1e3).toFixed(0)+'k'
+  return String(n)
+}
+
 // ─── Équipement ───────────────────────────────────────────────────────────────
 function equipItem(item, effects) {
   statsCache[item.ankama_id] = effects
+  if(!kamasCache[item.ankama_id]) kamasCache[item.ankama_id]=estimatePrice(item)
   const type = item.type?.name || ''
   let slot = null
   for (const s of SLOT_DEFS) {
@@ -1456,6 +1517,7 @@ function loadBuild() {
       Object.entries(d.build).forEach(([k,v])=>{
         if(!v) return
         build[k]=v; updateSlot(k,v)
+        if(!kamasCache[v.ankama_id]) kamasCache[v.ankama_id]=estimatePrice(v)
         if(k==='familier'){ showFam(v); updateFamSlot(v) }
       })
     }
@@ -1703,6 +1765,7 @@ function canDropOnSlot(item, slotId) {
 
 function equipItemToSlot(item, effects, slotId) {
   statsCache[item.ankama_id]=effects
+  if(!kamasCache[item.ankama_id]) kamasCache[item.ankama_id]=estimatePrice(item)
   build[slotId]=item
   updateSlot(slotId, item)
   animSlot(slotId,'equip')
