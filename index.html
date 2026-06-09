@@ -2681,24 +2681,39 @@ let setsSearchTerm = ''
 
 async function openSetsModal() {
   document.getElementById('sets-ov').style.display='flex'
-  if (!setsData.length) await loadSets()
-  else renderSetsGrid()
+  const srch = document.getElementById('sets-srch'); if(srch) srch.value=''
+  setsSearchTerm = ''
+  await loadSets()
 }
 function closeSetsModal() {
   document.getElementById('sets-ov').style.display='none'
 }
 
+// Normalise la réponse API sets (plusieurs formats)
+function parseSetsData(raw) {
+  return raw.map(s => {
+    const items = s.items || s.equipment || s.equipments || []
+    const level = parseInt(s.level || s.highest_level || s.high_level || s.max_level || 0) || 0
+    return { ...s, items, level }
+  }).filter(s => s.ankama_id && s.name)
+}
+
 async function loadSets() {
   const grid = document.getElementById('sets-grid')
   grid.innerHTML = '<div class="sets-loading">🎭<span>Chargement des panoplies…</span></div>'
+  setsData = []
   try {
-    // Fetch toutes les panoplies
-    const r = await fetch(`${API_SETS}/all?page_size=96&sort[level]=asc`)
+    const r = await fetch(`${API_SETS}/all?page_size=96`)
     const data = await r.json()
-    setsData = (data.sets || data.data || []).filter(s => s.items && s.items.length >= 2)
+    console.log('[Sets] status:', r.status, '| clés:', Object.keys(data))
+    const raw = data.items || data.sets || data.data || data.result || []
+    console.log('[Sets] nb raw:', raw.length, raw.length ? '| keys[0]:'+Object.keys(raw[0]).join(',') : '')
+    setsData = parseSetsData(raw)
+    console.log('[Sets] parsé:', setsData.length)
     renderSetsGrid()
   } catch(e) {
-    grid.innerHTML = '<div class="sets-loading">❌ Erreur de chargement</div>'
+    console.error('[Sets] Erreur:', e)
+    grid.innerHTML = '<div class="sets-loading">❌ ' + e.message + '</div>'
   }
 }
 
@@ -2851,20 +2866,18 @@ async function loadPanGrid() {
   grid.innerHTML = '<div class="sets-loading">&#127863;<span>Chargement…</span></div>'
   try {
     if (!setsData.length) {
-      const r = await fetch(`${API_SETS}/all?page_size=96&sort[level]=asc`)
+      const r = await fetch(`${API_SETS}/all?page_size=96`)
       const data = await r.json()
-      const raw = data.items || data.sets || data.data || []
-      console.log('[Panoplies] clés API:', Object.keys(data), '| nb sets:', raw.length)
-      if (raw.length) console.log('[Panoplies] set[0]:', Object.keys(raw[0]))
-      setsData = raw.map(s => ({
-        ...s,
-        items: s.items || s.equipment || [],
-        level: s.level || s.highest_level || s.high_level || 0
-      })).filter(s => s.ankama_id)
+      console.log('[Panoplies] status:', r.status, '| clés:', Object.keys(data))
+      const raw = data.items || data.sets || data.data || data.result || []
+      console.log('[Panoplies] nb raw:', raw.length, raw.length ? '| keys[0]:'+Object.keys(raw[0]).join(',') : '')
+      setsData = parseSetsData(raw)
+      console.log('[Panoplies] parsé:', setsData.length)
     }
     renderPanGrid()
   } catch(e) {
-    grid.innerHTML = '<div class="sets-loading">❌ Erreur de chargement</div>'
+    console.error('[Panoplies] Erreur:', e)
+    grid.innerHTML = '<div class="sets-loading">❌ ' + e.message + '</div>'
   }
 }
 
