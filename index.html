@@ -2743,7 +2743,7 @@ function renderSetsGrid() {
   }
 
   grid.innerHTML = filtered.map(s => {
-    const items = s.items || []
+    const items = Array.isArray(s.items) ? s.items : []
     const lvl = s.level || '?'
     // effects peut être un tableau ou un objet {2:[...], 3:[...]}
     const effectsArr = Array.isArray(s.effects) ? s.effects
@@ -2911,7 +2911,7 @@ function renderPanGrid() {
   }
 
   grid.innerHTML = filtered.map(s => {
-    const items = s.items || []
+    const items = Array.isArray(s.items) ? s.items : []
     const lvl   = s.level || '?'
     const effectsArr2 = Array.isArray(s.effects) ? s.effects
       : (s.effects && typeof s.effects === 'object') ? Object.entries(s.effects).map(([k,v])=>({item_count:parseInt(k),effects:v}))
