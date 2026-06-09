@@ -2745,10 +2745,13 @@ function renderSetsGrid() {
   grid.innerHTML = filtered.map(s => {
     const items = s.items || []
     const lvl = s.level || '?'
-    const bonus2 = s.effects?.find(e => e.item_count === 2)
-    const bonusMax = s.effects?.[s.effects.length-1]
+    // effects peut être un tableau ou un objet {2:[...], 3:[...]}
+    const effectsArr = Array.isArray(s.effects) ? s.effects
+      : (s.effects && typeof s.effects === 'object') ? Object.entries(s.effects).map(([k,v])=>({item_count:parseInt(k),effects:v}))
+      : []
+    const bonus2 = effectsArr.find(e => e.item_count === 2)
     const bonusTxt = bonus2
-      ? (bonus2.effects || []).slice(0,2).map(e=>e.formatted||e.type?.name||'').filter(Boolean).join(', ')
+      ? (bonus2.effects || []).slice(0,2).map(e=>e.formatted||e.label||e.type?.name||'').filter(Boolean).join(', ')
       : ''
 
     const imgs = items.slice(0,6).map(it =>
@@ -2910,9 +2913,12 @@ function renderPanGrid() {
   grid.innerHTML = filtered.map(s => {
     const items = s.items || []
     const lvl   = s.level || '?'
-    const bonus2 = s.effects?.find(e=>e.item_count===2)
+    const effectsArr2 = Array.isArray(s.effects) ? s.effects
+      : (s.effects && typeof s.effects === 'object') ? Object.entries(s.effects).map(([k,v])=>({item_count:parseInt(k),effects:v}))
+      : []
+    const bonus2 = effectsArr2.find(e=>e.item_count===2)
     const bonusTxt = bonus2
-      ? (bonus2.effects||[]).slice(0,2).map(e=>e.formatted||e.type?.name||'').filter(Boolean).join(', ')
+      ? (bonus2.effects||[]).slice(0,2).map(e=>e.formatted||e.label||e.type?.name||'').filter(Boolean).join(', ')
       : ''
     const imgs = items.slice(0,6).map(it =>
       it.image_urls?.icon
