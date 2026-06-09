@@ -960,6 +960,56 @@ footer b{color:var(--gold-d)}
   100%{transform:translateY(100vh) rotate(720deg) translateX(40px);opacity:0}
 }
 
+
+/* ── Tabs du panel items ── */
+.panel-tabs{
+  display:flex;align-items:center;flex-shrink:0;
+  border-bottom:1px solid rgba(244,201,93,.08);
+  background:linear-gradient(180deg,rgba(8,15,26,.97),var(--bg4));
+}
+.ptab{
+  flex:1;padding:.55rem .3rem;border:none;background:transparent;
+  color:var(--dim);font-size:.6rem;font-family:'Lato',sans-serif;
+  cursor:pointer;transition:all .2s;
+  border-bottom:2px solid transparent;
+  text-transform:uppercase;letter-spacing:.07em;
+}
+.ptab:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.ptab.active{
+  color:var(--gold-l);border-bottom-color:var(--gold);
+  background:rgba(244,201,93,.06);font-weight:700;
+}
+.ptab#ptab-auto{
+  color:var(--gold);
+  background:linear-gradient(180deg,rgba(244,201,93,.07),transparent);
+}
+.ptab#ptab-auto:hover{background:linear-gradient(180deg,rgba(244,201,93,.14),transparent)}
+
+/* Vue panoplies intégrée */
+#pview-items,#pview-panoplies{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.pan-header{
+  display:flex;align-items:center;gap:.5rem;flex-shrink:0;
+  padding:.45rem .6rem;border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,rgba(8,15,26,.96),var(--bg4));
+  flex-wrap:wrap;gap:4px;
+}
+.pan-filters{display:flex;gap:3px;flex-wrap:wrap}
+.pan-srch{
+  flex:1;min-width:90px;background:rgba(10,18,30,.9);
+  border:1px solid var(--border2);border-radius:7px;
+  padding:3px 8px;color:var(--text);font-size:.62rem;
+}
+.pan-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));
+  gap:.6rem;padding:.7rem;overflow-y:auto;flex:1;
+}
+
+/* Responsive mobile panoplies */
+@media(max-width:700px){
+  .pan-grid{grid-template-columns:repeat(2,1fr)!important;padding:.5rem;gap:.5rem}
+  .ptab{font-size:.54rem;padding:.5rem .2rem}
+}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -1111,22 +1161,52 @@ footer b{color:var(--gold-d)}
 </div>
 
 <!-- ═══ PANNEAU ITEMS ═══ -->
-<div class="panel-items">
-  <div class="srch-bar">
-    <span class="srch-icon">&#128269;</span>
-    <input id="srch" class="srch-input" placeholder="Rechercher un item Dofus..." autocomplete="off">
-    <button class="srch-clear" id="srch-clear" onclick="clearSearch()">&#10005;</button>
+<div class="panel-items" id="panel-items">
+
+  <!-- ── Tabs Items / Panoplies ── -->
+  <div class="panel-tabs">
+    <button class="ptab active" id="ptab-items"    onclick="switchPanelTab('items')"   >&#128269; Items</button>
+    <button class="ptab"        id="ptab-panoplies" onclick="switchPanelTab('panoplies')">&#127863; Panoplies</button>
+    <button class="ptab"        id="ptab-auto"      onclick="openAutoBuilder()"          >&#9889; Auto-Build</button>
   </div>
-  <div class="filtres-bar" id="filtres-bar"></div>
-  <div class="grid-area">
-    <div id="st-load" class="st-wrap"><div class="spinner"></div><p class="st-txt">Chargement des items...</p></div>
-    <div id="st-empty" class="st-wrap" style="display:none"><p class="st-txt">&#128302; Aucun item trouv&eacute;</p></div>
-    <div id="st-ok" style="display:none">
-      <p class="grid-meta" id="grid-meta"></p>
-      <div class="grid" id="grid"></div>
-      <div class="plus-wrap" id="plus-wrap" style="display:none"><button class="btn-more" id="btn-more">Charger plus &#8595;</button></div>
+
+  <!-- ── Vue Items ── -->
+  <div id="pview-items">
+    <div class="srch-bar">
+      <span class="srch-icon">&#128269;</span>
+      <input id="srch" class="srch-input" placeholder="Rechercher un item Dofus..." autocomplete="off">
+      <button class="srch-clear" id="srch-clear" onclick="clearSearch()">&#10005;</button>
+    </div>
+    <div class="filtres-bar" id="filtres-bar"></div>
+    <div class="grid-area">
+      <div id="st-load" class="st-wrap"><div class="spinner"></div><p class="st-txt">Chargement des items...</p></div>
+      <div id="st-empty" class="st-wrap" style="display:none"><p class="st-txt">&#128302; Aucun item trouv&eacute;</p></div>
+      <div id="st-ok" style="display:none">
+        <p class="grid-meta" id="grid-meta"></p>
+        <div class="grid" id="grid"></div>
+        <div class="plus-wrap" id="plus-wrap" style="display:none"><button class="btn-more" id="btn-more">Charger plus &#8595;</button></div>
+      </div>
     </div>
   </div>
+
+  <!-- ── Vue Panoplies ── -->
+  <div id="pview-panoplies" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+    <div class="pan-header">
+      <div class="pan-filters" id="pan-filters">
+        <button class="sets-fb on" data-max="999" onclick="setPanLevel(this,999)">Tous</button>
+        <button class="sets-fb" data-max="60"  onclick="setPanLevel(this,60)" >≤ 60</button>
+        <button class="sets-fb" data-max="100" onclick="setPanLevel(this,100)">≤ 100</button>
+        <button class="sets-fb" data-max="140" onclick="setPanLevel(this,140)">≤ 140</button>
+        <button class="sets-fb" data-max="200" onclick="setPanLevel(this,200)">≤ 200</button>
+      </div>
+      <input class="pan-srch" id="pan-srch" placeholder="Chercher une panoplie…"
+        oninput="filterPanGrid(this.value)">
+    </div>
+    <div class="pan-grid" id="pan-grid">
+      <div class="sets-loading">&#127863;<span>Cliquez pour charger les panoplies</span></div>
+    </div>
+  </div>
+
 </div>
 
 </div><!-- .main -->
@@ -2745,6 +2825,95 @@ function launchConfettis() {
       setTimeout(()=>c.remove(), 3000)
     }, i * 30)
   }
+}
+
+
+// ══════════════════════════════════════════════════
+// TABS PANEL ITEMS
+// ══════════════════════════════════════════════════
+let panLevelFilter = 999
+let panSearchTerm = ''
+let panLoaded = false
+
+function switchPanelTab(tab) {
+  document.getElementById('pview-items').style.display     = tab==='items'     ? 'flex' : 'none'
+  document.getElementById('pview-panoplies').style.display = tab==='panoplies' ? 'flex' : 'none'
+  document.getElementById('ptab-items').classList.toggle('active',    tab==='items')
+  document.getElementById('ptab-panoplies').classList.toggle('active', tab==='panoplies')
+  // Charger les panoplies au premier clic
+  if (tab==='panoplies' && !panLoaded) { panLoaded=true; loadPanGrid() }
+  // Mobile: aussi switcher l'onglet items
+  if (window.innerWidth<=700) {
+    document.querySelector('.main').dataset.tab = 'items'
+    document.querySelectorAll('.mob-tab').forEach(b=>b.classList.toggle('active',b.dataset.tab==='items'))
+  }
+}
+
+async function loadPanGrid() {
+  const grid = document.getElementById('pan-grid')
+  grid.innerHTML = '<div class="sets-loading">&#127863;<span>Chargement…</span></div>'
+  try {
+    if (!setsData.length) {
+      const r = await fetch(`${API_SETS}/all?page_size=96&sort[level]=asc`)
+      const data = await r.json()
+      setsData = (data.sets || data.data || []).filter(s=>s.items && s.items.length>=2)
+    }
+    renderPanGrid()
+  } catch(e) {
+    grid.innerHTML = '<div class="sets-loading">❌ Erreur de chargement</div>'
+  }
+}
+
+function setPanLevel(btn, max) {
+  document.querySelectorAll('#pan-filters .sets-fb').forEach(b=>b.classList.remove('on'))
+  btn.classList.add('on')
+  panLevelFilter = max
+  renderPanGrid()
+}
+
+function filterPanGrid(q) {
+  panSearchTerm = q.toLowerCase()
+  renderPanGrid()
+}
+
+function renderPanGrid() {
+  const grid = document.getElementById('pan-grid')
+  const filtered = setsData.filter(s => {
+    const lvl = s.items?.[0]?.level || s.level || 0
+    const nm  = (s.name||'').toLowerCase()
+    return lvl <= panLevelFilter && (!panSearchTerm || nm.includes(panSearchTerm))
+  })
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="sets-loading">🔍 Aucune panoplie trouvée</div>'
+    return
+  }
+
+  grid.innerHTML = filtered.map(s => {
+    const items = s.items || []
+    const lvl   = items[0]?.level || s.level || '?'
+    const bonus2 = s.effects?.find(e=>e.item_count===2)
+    const bonusTxt = bonus2
+      ? (bonus2.effects||[]).slice(0,2).map(e=>e.formatted||e.type?.name||'').filter(Boolean).join(', ')
+      : ''
+    const imgs = items.slice(0,6).map(it =>
+      it.image_urls?.icon
+        ? `<img class="set-card-img" src="${it.image_urls.icon}" alt="${it.name}" title="${it.name}" loading="lazy">`
+        : ''
+    ).join('')
+
+    return `<div class="set-card">
+      <div class="set-card-head">
+        <div class="set-card-name" title="${s.name}">${s.name}</div>
+        <div class="set-card-lvl">Niv. ${lvl} &middot; ${items.length} pièces</div>
+      </div>
+      <div class="set-card-items">${imgs}</div>
+      ${bonusTxt?`<div class="set-card-bonus">✦ ${bonusTxt}</div>`:''}
+      <button class="set-card-btn" onclick="equipFullSet(${JSON.stringify(s.ankama_id)})">
+        Équiper ▸
+      </button>
+    </div>`
+  }).join('')
 }
 
 renderFiltres(); fetchItems(1,false); initDragDrop()
