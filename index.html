@@ -815,6 +815,151 @@ footer b{color:var(--gold-d)}
   #bg-canvas{display:none}
 }
 
+
+/* ── Boutons spéciaux char-infobar ── */
+.ci-btn-auto{
+  background:linear-gradient(135deg,rgba(244,201,93,.22),rgba(201,153,42,.15))!important;
+  border-color:rgba(244,201,93,.45)!important;color:var(--gold)!important;
+  font-size:.8rem!important;
+}
+.ci-btn-auto:hover{
+  background:linear-gradient(135deg,rgba(244,201,93,.35),rgba(201,153,42,.25))!important;
+  box-shadow:0 0 12px rgba(244,201,93,.3)!important;
+}
+.ci-btn-sets{
+  background:linear-gradient(135deg,rgba(138,112,216,.2),rgba(90,64,168,.12))!important;
+  border-color:rgba(138,112,216,.45)!important;color:var(--purple)!important;
+}
+.ci-btn-sets:hover{
+  background:linear-gradient(135deg,rgba(138,112,216,.32),rgba(90,64,168,.22))!important;
+  box-shadow:0 0 12px rgba(138,112,216,.3)!important;
+}
+
+/* ══ MODAL AUTO-BUILD ══ */
+.ab-ov{position:fixed;inset:0;background:rgba(2,5,10,.92);z-index:500;
+  display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);
+  animation:fadeOv .2s ease}
+.ab-box{
+  background:linear-gradient(155deg,rgba(12,22,40,.99),rgba(8,16,30,.98));
+  border:1px solid var(--border3);border-radius:18px;
+  padding:1.4rem 1.5rem;width:420px;max-width:95vw;
+  box-shadow:0 30px 80px rgba(0,0,0,.9);
+  display:flex;flex-direction:column;gap:1rem;
+}
+.ab-title{font-family:'Cinzel',serif;font-size:1rem;color:var(--gold);
+  display:flex;align-items:center;gap:.5rem}
+.ab-title span{font-size:1.2rem}
+.ab-section{display:flex;flex-direction:column;gap:.4rem}
+.ab-lbl{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;
+  color:rgba(244,201,93,.6);font-family:'Cinzel',serif}
+.ab-slider{width:100%;-webkit-appearance:none;height:5px;
+  background:var(--border2);border-radius:3px;outline:none}
+.ab-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;
+  border-radius:50%;background:var(--gold);cursor:pointer;
+  box-shadow:0 0 8px rgba(244,201,93,.4)}
+.ab-lvl-val{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold-l);
+  text-align:center;font-weight:700}
+.ab-styles{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.ab-style-btn{
+  padding:.6rem .4rem;border-radius:10px;border:1px solid var(--border2);
+  background:rgba(12,22,36,.7);color:var(--text2);
+  cursor:pointer;text-align:center;transition:all .2s;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+.ab-style-btn:hover{border-color:var(--border3);transform:translateY(-2px)}
+.ab-style-btn.sel{border-color:var(--gold);background:rgba(244,201,93,.12);color:var(--gold-l)}
+.ab-style-ico{font-size:1.4rem}
+.ab-style-nm{font-size:.6rem;font-family:'Cinzel',serif;text-transform:uppercase;letter-spacing:.06em}
+.ab-actions{display:flex;gap:.6rem;margin-top:.3rem}
+.ab-btn-go{
+  flex:1;padding:.7rem;border-radius:10px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#ffe49a,var(--gold),var(--gold-d));
+  color:#06090f;font-family:'Cinzel',serif;font-size:.82rem;font-weight:700;
+  box-shadow:0 4px 16px rgba(201,153,42,.35);transition:all .2s;
+}
+.ab-btn-go:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(201,153,42,.5)}
+.ab-btn-go:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.ab-cancel{padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border2);
+  background:transparent;color:var(--dim);cursor:pointer;transition:all .2s}
+.ab-cancel:hover{border-color:var(--border3);color:var(--text)}
+.ab-progress{display:none;flex-direction:column;gap:.5rem}
+.ab-prog-bar-wrap{height:6px;background:rgba(0,0,0,.4);border-radius:3px;overflow:hidden}
+.ab-prog-bar{height:100%;border-radius:3px;width:0%;
+  background:linear-gradient(90deg,var(--gold-d),var(--gold));
+  transition:width .4s ease;box-shadow:0 0 8px rgba(244,201,93,.4)}
+.ab-prog-txt{font-size:.65rem;color:var(--text2);text-align:center}
+
+/* ══ MODAL PANOPLIES ══ */
+.sets-ov{position:fixed;inset:0;background:rgba(2,5,10,.92);z-index:500;
+  display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);
+  animation:fadeOv .2s ease}
+.sets-box{
+  background:linear-gradient(155deg,rgba(12,22,40,.99),rgba(8,16,30,.98));
+  border:1px solid var(--border3);border-radius:18px;
+  width:680px;max-width:97vw;max-height:88vh;
+  box-shadow:0 30px 80px rgba(0,0,0,.9);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.sets-head{
+  display:flex;align-items:center;padding:1rem 1.2rem .8rem;
+  border-bottom:1px solid rgba(138,112,216,.18);gap:.7rem;flex-shrink:0;
+}
+.sets-head h3{font-family:'Cinzel',serif;font-size:.95rem;color:var(--purple);flex:1;margin:0}
+.sets-filter{display:flex;gap:.4rem;padding:.5rem .8rem;
+  border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+.sets-fb{padding:3px 10px;border-radius:20px;border:1px solid var(--border);
+  background:rgba(12,21,34,.8);color:var(--dim);font-size:.6rem;cursor:pointer;
+  transition:all .18s;font-family:'Lato',sans-serif}
+.sets-fb.on{background:linear-gradient(135deg,rgba(138,112,216,.22),rgba(90,64,168,.15));
+  color:#b8a0f8;border-color:rgba(138,112,216,.5);
+  box-shadow:0 2px 8px rgba(138,112,216,.2)}
+.sets-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+  gap:.7rem;padding:.9rem;overflow-y:auto;flex:1;
+}
+.set-card{
+  background:linear-gradient(155deg,rgba(14,24,42,.97),rgba(9,17,31,.98));
+  border:1px solid rgba(138,112,216,.22);border-radius:12px;
+  overflow:hidden;cursor:pointer;transition:all .22s;
+  display:flex;flex-direction:column;
+}
+.set-card:hover{
+  border-color:rgba(138,112,216,.5);transform:translateY(-3px);
+  box-shadow:0 10px 28px rgba(0,0,0,.6),0 0 0 1px rgba(138,112,216,.1);
+}
+.set-card-head{
+  padding:.6rem .7rem .4rem;
+  background:linear-gradient(135deg,rgba(138,112,216,.1),transparent);
+  border-bottom:1px solid rgba(138,112,216,.1);
+}
+.set-card-name{font-family:'Cinzel',serif;font-size:.67rem;color:#c0a8f8;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.set-card-lvl{font-size:.52rem;color:var(--dim);margin-top:1px}
+.set-card-items{
+  display:flex;flex-wrap:wrap;gap:3px;padding:.45rem .5rem;flex:1;
+}
+.set-card-img{width:28px;height:28px;image-rendering:pixelated;
+  filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));border-radius:4px}
+.set-card-bonus{
+  font-size:.52rem;color:var(--dim);padding:.3rem .5rem .5rem;
+  line-height:1.4;border-top:1px solid rgba(138,112,216,.08);
+}
+.set-card-btn{
+  width:100%;padding:.4rem;border:none;cursor:pointer;
+  background:linear-gradient(135deg,rgba(138,112,216,.22),rgba(90,64,168,.15));
+  color:#b8a0f8;font-size:.62rem;font-family:'Cinzel',serif;
+  transition:all .2s;border-top:1px solid rgba(138,112,216,.15);
+}
+.set-card-btn:hover{background:linear-gradient(135deg,rgba(138,112,216,.35),rgba(90,64,168,.25));color:#d0b8ff}
+.sets-loading{display:flex;align-items:center;justify-content:center;
+  height:200px;color:var(--dim);font-size:.75rem;gap:.5rem;flex-direction:column}
+
+
+@keyframes confettiDrop{
+  0%{transform:translateY(0) rotate(0deg) translateX(0);opacity:1}
+  100%{transform:translateY(100vh) rotate(720deg) translateX(40px);opacity:0}
+}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -957,6 +1102,8 @@ footer b{color:var(--gold-d)}
     <button class="ci-btn" onclick="exportPNG()" title="Exporter en image">&#128247;</button>
     <button class="ci-btn" onclick="exportBuild()" title="Copier le lien du build">&#128279;</button>
     <button class="ci-btn danger" onclick="resetBuild()" title="R&eacute;initialiser">&#128465;</button>
+    <button class="ci-btn ci-btn-auto" onclick="openAutoBuilder()" title="Auto-Build &#9889;">&#9889;</button>
+    <button class="ci-btn ci-btn-sets" onclick="openSetsModal()" title="Panoplies">&#127863;</button>
   </div>
 
   <!-- Stats -->
@@ -2296,6 +2443,310 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 })
 
+
+// ═══════════════════════════════════════════════════════════════
+// AUTO-BUILD OPTIMIZER
+// ═══════════════════════════════════════════════════════════════
+
+const AB_SCORE = {
+  offensif: {
+    'Force':2,'Intelligence':2,'Chance':2,'Agilité':2,'Puissance':3,
+    'Dommages':5,'Dommages critiques':4,'PA':8,'Critique':3,
+    'Dommages Feu':3,'Dommages Eau':3,'Dommages Terre':3,'Dommages Air':3,
+  },
+  defensif: {
+    'Vitalité':2,'% Résistance Feu':3,'% Résistance Eau':3,
+    '% Résistance Terre':3,'% Résistance Air':3,'% Résistance Neutre':3,
+    'Résistance Feu':1,'Résistance Eau':1,'Résistance Terre':1,
+    'Résistance Air':1,'Résistance Neutre':1,'PM':6,'Esquive PA':4,'Esquive PM':3,
+  },
+  equilibre: {
+    'Force':1.5,'Intelligence':1.5,'Chance':1.5,'Agilité':1.5,'Puissance':2,
+    'Dommages':3,'PA':6,'PM':5,'Vitalité':1.5,
+    '% Résistance Feu':2,'% Résistance Eau':2,'% Résistance Terre':2,
+    '% Résistance Air':2,'% Résistance Neutre':2,
+  }
+}
+
+// Slots à optimiser (pas anneau2 ni arme2 pour éviter doublons)
+const AB_SLOTS = [
+  {id:'chapeau',  types:['Chapeau']},
+  {id:'amulette', types:['Amulette']},
+  {id:'cape',     types:['Cape','Manteau']},
+  {id:'ceinture', types:['Ceinture']},
+  {id:'anneau1',  types:['Anneau']},
+  {id:'anneau2',  types:['Anneau']},
+  {id:'bottes',   types:['Bottes']},
+  {id:'arme',     types:['Épée','Arc','Dague','Bâton','Marteau','Hache','Faux','Pelle','Pioche','Baguette']},
+  {id:'bouclier', types:['Bouclier']},
+]
+
+let abStyle = 'offensif'
+
+function selAbStyle(btn) {
+  document.querySelectorAll('.ab-style-btn').forEach(b=>b.classList.remove('sel'))
+  btn.classList.add('sel')
+  abStyle = btn.dataset.style
+}
+
+function openAutoBuilder() {
+  document.getElementById('ab-ov').style.display='flex'
+  document.getElementById('ab-progress').style.display='none'
+  document.getElementById('ab-actions').style.display='flex'
+}
+function closeAutoBuilder() {
+  document.getElementById('ab-ov').style.display='none'
+}
+
+function scoreItem(item, effects, style) {
+  const weights = AB_SCORE[style] || AB_SCORE.offensif
+  let score = 0
+  effects.forEach(e => {
+    const n = e.type?.name || ''
+    const v = e.int_minimum || 0
+    if (weights[n] && v > 0) score += v * weights[n]
+  })
+  return score
+}
+
+async function runAutoBuild() {
+  const lvl = parseInt(document.getElementById('ab-lvl').value)
+  const style = abStyle
+  const goBtn = document.querySelector('.ab-btn-go')
+  const prog = document.getElementById('ab-progress')
+  const progBar = document.getElementById('ab-prog-bar')
+  const progTxt = document.getElementById('ab-prog-txt')
+  const actDiv = document.getElementById('ab-actions')
+
+  goBtn.disabled = true
+  prog.style.display = 'flex'
+  actDiv.style.display = 'none'
+
+  // Reset build d'abord
+  Object.keys(build).forEach(k => { build[k] = null; updateSlot(k, null) })
+
+  const total = AB_SLOTS.length
+  let done = 0
+
+  for (const slot of AB_SLOTS) {
+    progTxt.textContent = `🔍 Recherche ${slot.id}…`
+    progBar.style.width = `${Math.round(done/total*100)}%`
+
+    try {
+      // Fetch les 20 meilleurs items du bon type jusqu'au niveau
+      const typeParts = slot.types.map(t=>`filter[type_name][]=${encodeURIComponent(t)}`).join('&')
+      const url = `${API_EQ}/all?${typeParts}&filter[max_level]=${lvl}&sort[level]=desc&page_size=20`
+      const r = await fetch(url)
+      const data = await r.json()
+      const items = data.items || data.data || []
+      if (!items.length) { done++; continue }
+
+      // Fetch effets pour les 6 premiers items (évite trop de requêtes)
+      const candidates = items.slice(0, 6)
+      let best = null, bestScore = -1
+
+      for (const item of candidates) {
+        // Vérifie que l'item n'est pas déjà équipé
+        const alreadyEq = Object.values(build).some(b=>b?.ankama_id===item.ankama_id)
+        if (alreadyEq) continue
+
+        let effects = statsCache[item.ankama_id]
+        if (!effects) {
+          try {
+            const er = await fetch(`${API_EQ}/${item.ankama_id}`)
+            const ed = await er.json()
+            effects = ed.effects || []
+            statsCache[item.ankama_id] = effects
+          } catch(e) { effects = [] }
+        }
+        const s = scoreItem(item, effects, style)
+        if (s > bestScore) { bestScore = s; best = {item, effects} }
+      }
+
+      if (best) {
+        // Équiper avec animation
+        build[slot.id] = best.item
+        statsCache[best.item.ankama_id] = best.effects
+        if (!kamasCache[best.item.ankama_id]) kamasCache[best.item.ankama_id] = estimatePrice(best.item)
+        updateSlot(slot.id, best.item)
+        playEquipSound()
+        // Petit délai pour l'effet visuel
+        await new Promise(r => setTimeout(r, 180))
+      }
+    } catch(e) { console.warn('AB slot error', slot.id, e) }
+
+    done++
+  }
+
+  progBar.style.width = '100%'
+  progTxt.textContent = '✅ Build optimisé !'
+
+  renderStats()
+  renderSetBonus()
+  updateKamasTotal()
+  saveBuild()
+
+  setTimeout(() => {
+    closeAutoBuilder()
+    toast(`⚡ Build ${style} niveau ${lvl} prêt !`, 'ok')
+    // Confettis
+    if(window.launchConfettis) launchConfettis()
+  }, 800)
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PANOPLIES SUGGÉRÉES
+// ═══════════════════════════════════════════════════════════════
+
+let setsData = []
+let setsLevelFilter = 999
+let setsSearchTerm = ''
+
+async function openSetsModal() {
+  document.getElementById('sets-ov').style.display='flex'
+  if (!setsData.length) await loadSets()
+  else renderSetsGrid()
+}
+function closeSetsModal() {
+  document.getElementById('sets-ov').style.display='none'
+}
+
+async function loadSets() {
+  const grid = document.getElementById('sets-grid')
+  grid.innerHTML = '<div class="sets-loading">🎭<span>Chargement des panoplies…</span></div>'
+  try {
+    // Fetch toutes les panoplies
+    const r = await fetch(`${API_SETS}/all?page_size=96&sort[level]=asc`)
+    const data = await r.json()
+    setsData = (data.sets || data.data || []).filter(s => s.items && s.items.length >= 2)
+    renderSetsGrid()
+  } catch(e) {
+    grid.innerHTML = '<div class="sets-loading">❌ Erreur de chargement</div>'
+  }
+}
+
+function setSetsLevel(btn) {
+  document.querySelectorAll('.sets-fb').forEach(b=>b.classList.remove('on'))
+  btn.classList.add('on')
+  setsLevelFilter = parseInt(btn.dataset.max)
+  renderSetsGrid()
+}
+
+function filterSetsGrid(q) {
+  setsSearchTerm = q.toLowerCase()
+  renderSetsGrid()
+}
+
+function renderSetsGrid() {
+  const grid = document.getElementById('sets-grid')
+  const filtered = setsData.filter(s => {
+    const lvl = s.items?.[0]?.level || s.level || 0
+    const nm = (s.name||'').toLowerCase()
+    return lvl <= setsLevelFilter && (setsSearchTerm==='' || nm.includes(setsSearchTerm))
+  })
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="sets-loading">🔍 Aucune panoplie trouvée</div>'
+    return
+  }
+
+  grid.innerHTML = filtered.map(s => {
+    const items = s.items || []
+    const lvl = items[0]?.level || s.level || '?'
+    const bonus2 = s.effects?.find(e => e.item_count === 2)
+    const bonusMax = s.effects?.[s.effects.length-1]
+    const bonusTxt = bonus2
+      ? (bonus2.effects || []).slice(0,2).map(e=>e.formatted||e.type?.name||'').filter(Boolean).join(', ')
+      : ''
+
+    const imgs = items.slice(0,6).map(it =>
+      it.image_urls?.icon
+        ? `<img class="set-card-img" src="${it.image_urls.icon}" alt="${it.name}" title="${it.name}" loading="lazy">`
+        : ''
+    ).join('')
+
+    return `<div class="set-card">
+      <div class="set-card-head">
+        <div class="set-card-name" title="${s.name}">${s.name}</div>
+        <div class="set-card-lvl">Niveau ${lvl} · ${items.length} pièces</div>
+      </div>
+      <div class="set-card-items">${imgs}</div>
+      ${bonusTxt ? `<div class="set-card-bonus">2 pièces: ${bonusTxt}</div>` : ''}
+      <button class="set-card-btn" onclick='equipFullSet(${JSON.stringify(s.ankama_id)})'>
+        Équiper la panoplie ▸
+      </button>
+    </div>`
+  }).join('')
+}
+
+async function equipFullSet(setId) {
+  closeSetsModal()
+  toast('⏳ Chargement de la panoplie…', 'info')
+
+  try {
+    const r = await fetch(`${API_SETS}/${setId}`)
+    const setData = await r.json()
+    const items = setData.equipment || setData.items || []
+    if (!items.length) { toast('Aucun item trouvé', 'err'); return }
+
+    // Équiper les items un par un avec animation
+    for (const itemBasic of items) {
+      try {
+        const er = await fetch(`${API_EQ}/${itemBasic.ankama_id}`)
+        const item = await er.json()
+        const effects = item.effects || []
+        statsCache[item.ankama_id] = effects
+        if (!kamasCache[item.ankama_id]) kamasCache[item.ankama_id] = estimatePrice(item)
+
+        // Trouver le bon slot
+        const type = item.type?.name || ''
+        for (const s of SLOT_DEFS) {
+          if (s.types.some(t => type.toLowerCase().includes(t.toLowerCase()) || t.toLowerCase().includes(type.toLowerCase()))) {
+            if (!build[s.id]) {
+              build[s.id] = item
+              updateSlot(s.id, item)
+              playEquipSound()
+              await new Promise(r => setTimeout(r, 150))
+              break
+            }
+          }
+        }
+      } catch(e) { console.warn('Set item error', itemBasic.ankama_id) }
+    }
+
+    renderStats(); renderSetBonus(); updateKamasTotal(); saveBuild()
+    toast(`✅ Panoplie équipée !`, 'ok')
+    if (window.launchConfettis) launchConfettis()
+  } catch(e) {
+    toast('Erreur lors de l\'équipement', 'err')
+  }
+}
+
+
+// ════════════════════════
+// CONFETTIS
+// ════════════════════════
+function launchConfettis() {
+  const colors = ['#f4c95d','#c9992a','#ffe49a','#9a80e8','#4ab8d8','#4ecb4e']
+  const container = document.body
+  for (let i = 0; i < 60; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div')
+      const color = colors[Math.floor(Math.random()*colors.length)]
+      const size = 6 + Math.random()*8
+      c.style.cssText = `
+        position:fixed;z-index:9999;pointer-events:none;
+        width:${size}px;height:${size}px;border-radius:${Math.random()>.5?'50%':'2px'};
+        background:${color};opacity:1;
+        left:${20+Math.random()*60}%;top:-10px;
+        animation:confettiDrop ${1.5+Math.random()}s ease-in forwards;
+      `
+      container.appendChild(c)
+      setTimeout(()=>c.remove(), 3000)
+    }, i * 30)
+  }
+}
+
 renderFiltres(); fetchItems(1,false); initDragDrop()
 setTimeout(async()=>{const ok=await importFromHash();if(!ok) loadBuild()},350)
 </script>
@@ -2401,6 +2852,68 @@ setTimeout(async()=>{const ok=await importFromHash();if(!ok) loadBuild()},350)
   });
 })();
 </script>
+
+<!-- ═══ MODAL AUTO-BUILD ═══ -->
+<div class="ab-ov" id="ab-ov" style="display:none">
+  <div class="ab-box">
+    <div class="ab-title"><span>⚡</span> Auto-Build</div>
+    <div class="ab-section">
+      <div class="ab-lbl">Niveau maximum</div>
+      <input class="ab-slider" id="ab-lvl" type="range" min="1" max="200" value="200"
+        oninput="document.getElementById('ab-lvl-v').textContent=this.value">
+      <div class="ab-lvl-val" id="ab-lvl-v">200</div>
+    </div>
+    <div class="ab-section">
+      <div class="ab-lbl">Style de jeu</div>
+      <div class="ab-styles">
+        <div class="ab-style-btn sel" data-style="offensif" onclick="selAbStyle(this)">
+          <div class="ab-style-ico">⚔️</div>
+          <div class="ab-style-nm">Offensif</div>
+        </div>
+        <div class="ab-style-btn" data-style="defensif" onclick="selAbStyle(this)">
+          <div class="ab-style-ico">🛡️</div>
+          <div class="ab-style-nm">Défensif</div>
+        </div>
+        <div class="ab-style-btn" data-style="equilibre" onclick="selAbStyle(this)">
+          <div class="ab-style-ico">⚖️</div>
+          <div class="ab-style-nm">Équilibré</div>
+        </div>
+      </div>
+    </div>
+    <div class="ab-progress" id="ab-progress">
+      <div class="ab-prog-txt" id="ab-prog-txt">Recherche en cours…</div>
+      <div class="ab-prog-bar-wrap"><div class="ab-prog-bar" id="ab-prog-bar"></div></div>
+    </div>
+    <div class="ab-actions" id="ab-actions">
+      <button class="ab-cancel" onclick="closeAutoBuilder()">Annuler</button>
+      <button class="ab-btn-go" onclick="runAutoBuild()">⚡ Construire mon build !</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL PANOPLIES ═══ -->
+<div class="sets-ov" id="sets-ov" style="display:none">
+  <div class="sets-box">
+    <div class="sets-head">
+      <h3>🎭 Panoplies</h3>
+      <div style="display:flex;gap:4px">
+        <input id="sets-srch" placeholder="Rechercher…" style="background:rgba(12,22,36,.8);border:1px solid var(--border2);border-radius:7px;padding:4px 8px;color:var(--text);font-size:.65rem;width:130px" oninput="filterSetsGrid(this.value)">
+        <button class="ci-btn" onclick="closeSetsModal()" style="font-size:.8rem">✕</button>
+      </div>
+    </div>
+    <div class="sets-filter" id="sets-filter">
+      <button class="sets-fb on" data-max="999" onclick="setSetsLevel(this)">Tous niveaux</button>
+      <button class="sets-fb" data-max="60"  onclick="setSetsLevel(this)">≤ 60</button>
+      <button class="sets-fb" data-max="100" onclick="setSetsLevel(this)">≤ 100</button>
+      <button class="sets-fb" data-max="140" onclick="setSetsLevel(this)">≤ 140</button>
+      <button class="sets-fb" data-max="200" onclick="setSetsLevel(this)">≤ 200</button>
+    </div>
+    <div class="sets-grid" id="sets-grid">
+      <div class="sets-loading">🎭<span>Chargement des panoplies…</span></div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
                                                                                                                                                                                                                                                     
