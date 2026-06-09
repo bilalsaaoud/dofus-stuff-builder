@@ -932,18 +932,12 @@ footer b{color:var(--gold-d)}
   background:linear-gradient(135deg,rgba(138,112,216,.1),transparent);
   border-bottom:1px solid rgba(138,112,216,.1);
 }
-.set-card-name{font-family:'Cinzel',serif;font-size:.67rem;color:#c0a8f8;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.set-card-lvl{font-size:.52rem;color:var(--dim);margin-top:1px}
-.set-card-items{
-  display:flex;flex-wrap:wrap;gap:3px;padding:.45rem .5rem;flex:1;
-}
-.set-card-img{width:28px;height:28px;image-rendering:pixelated;
-  filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));border-radius:4px}
-.set-card-bonus{
-  font-size:.52rem;color:var(--dim);padding:.3rem .5rem .5rem;
-  line-height:1.4;border-top:1px solid rgba(138,112,216,.08);
-}
+.set-card-name{font-family:'Cinzel',serif;font-size:.75rem;color:#c0a8f8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.set-card-lvl{font-size:.62rem;color:var(--dim);margin-top:2px}
+.set-card-bonuses{flex:1;padding:.4rem .55rem;display:flex;flex-direction:column;gap:3px;overflow:hidden}
+.set-bonus-row{font-size:.65rem;color:var(--text2);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.set-bonus-n{color:#b8a0f8;font-weight:700;margin-right:3px}
+.set-no-bonus{color:var(--dim);font-size:.6rem}
 .set-card-btn{
   width:100%;padding:.4rem;border:none;cursor:pointer;
   background:linear-gradient(135deg,rgba(138,112,216,.22),rgba(90,64,168,.15));
@@ -2692,10 +2686,15 @@ function closeSetsModal() {
 // Normalise la réponse API sets (plusieurs formats)
 function parseSetsData(raw) {
   return raw.map(s => {
-    const items = s.items || s.equipment || s.equipments || []
-    const level = parseInt(s.level || s.highest_level || s.high_level || s.max_level || 0) || 0
-    return { ...s, items, level }
-  }).filter(s => s.ankama_id && s.name)
+    const itemCount = typeof s.items === 'number' ? s.items : Array.isArray(s.items) ? s.items.length : 0
+    const equipIds  = Array.isArray(s.equipment_ids) ? s.equipment_ids : []
+    const effectsArr = s.effects && typeof s.effects==='object' && !Array.isArray(s.effects)
+      ? Object.entries(s.effects).filter(([,v])=>Array.isArray(v))
+          .map(([k,v])=>({item_count:parseInt(k),effects:v})).sort((a,b)=>a.item_count-b.item_count)
+      : (Array.isArray(s.effects) ? s.effects : [])
+    const level = parseInt(s.level||s.highest_level||0)||0
+    return { ...s, itemCount, equipIds, effectsArr, items:[], level }
+  }).filter(s=>s.ankama_id&&s.name)
 }
 
 async function loadSets() {
@@ -2743,38 +2742,27 @@ function renderSetsGrid() {
   }
 
   grid.innerHTML = filtered.map(s => {
-    const items = Array.isArray(s.items) ? s.items : []
-    const lvl = s.level || '?'
-    // effects peut être un tableau ou un objet {2:[...], 3:[...]}
-    const effectsArr = Array.isArray(s.effects) ? s.effects
-      : (s.effects && typeof s.effects === 'object') ? Object.entries(s.effects).map(([k,v])=>({item_count:parseInt(k),effects:v}))
-      : []
-    const bonus2 = effectsArr.find(e => e.item_count === 2)
-    const bonusTxt = bonus2
-      ? (bonus2.effects || []).slice(0,2).map(e=>e.formatted||e.label||e.type?.name||'').filter(Boolean).join(', ')
-      : ''
-
-    const imgs = items.slice(0,6).map(it =>
-      it.image_urls?.icon
-        ? `<img class="set-card-img" src="${it.image_urls.icon}" alt="${it.name}" title="${it.name}" loading="lazy">`
-        : ''
+    const lvl        = s.level || '?'
+    const itemCount  = s.itemCount || 0
+    const effectsArr = s.effectsArr || []
+    const allBonuses = effectsArr.slice(0,5).map(e =>
+      `<div class="set-bonus-row"><span class="set-bonus-n">${e.item_count}✦</span> ${
+        (e.effects||[]).slice(0,2).map(x=>x.formatted||'').filter(Boolean).join(' · ')
+      }</div>`
     ).join('')
 
-    return `<div class="set-card">
+    return `<div class="set-card" onclick="equipFullSet(${JSON.stringify(s.ankama_id)})">
       <div class="set-card-head">
         <div class="set-card-name" title="${s.name}">${s.name}</div>
-        <div class="set-card-lvl">Niveau ${lvl} · ${items.length} pièces</div>
+        <div class="set-card-lvl">Niv.${lvl} &middot; ${itemCount} pièces</div>
       </div>
-      <div class="set-card-items">${imgs}</div>
-      ${bonusTxt ? `<div class="set-card-bonus">2 pièces: ${bonusTxt}</div>` : ''}
-      <button class="set-card-btn" onclick='equipFullSet(${JSON.stringify(s.ankama_id)})'>
-        Équiper la panoplie ▸
-      </button>
+      <div class="set-card-bonuses">${allBonuses||'<span class="set-no-bonus">—</span>'}</div>
+      <div class="set-card-btn">Équiper ▸</div>
     </div>`
   }).join('')
 }
 
-async function equipFullSet(setId) {
+function equipFullSet(setId) {
   closeSetsModal()
   toast('⏳ Chargement de la panoplie…', 'info')
 
@@ -2911,31 +2899,22 @@ function renderPanGrid() {
   }
 
   grid.innerHTML = filtered.map(s => {
-    const items = Array.isArray(s.items) ? s.items : []
-    const lvl   = s.level || '?'
-    const effectsArr2 = Array.isArray(s.effects) ? s.effects
-      : (s.effects && typeof s.effects === 'object') ? Object.entries(s.effects).map(([k,v])=>({item_count:parseInt(k),effects:v}))
-      : []
-    const bonus2 = effectsArr2.find(e=>e.item_count===2)
-    const bonusTxt = bonus2
-      ? (bonus2.effects||[]).slice(0,2).map(e=>e.formatted||e.label||e.type?.name||'').filter(Boolean).join(', ')
-      : ''
-    const imgs = items.slice(0,6).map(it =>
-      it.image_urls?.icon
-        ? `<img class="set-card-img" src="${it.image_urls.icon}" alt="${it.name}" title="${it.name}" loading="lazy">`
-        : ''
+    const lvl        = s.level || '?'
+    const itemCount  = s.itemCount || 0
+    const effectsArr = s.effectsArr || []
+    const allBonuses = effectsArr.slice(0,5).map(e =>
+      `<div class="set-bonus-row"><span class="set-bonus-n">${e.item_count}✦</span> ${
+        (e.effects||[]).slice(0,2).map(x=>x.formatted||'').filter(Boolean).join(' · ')
+      }</div>`
     ).join('')
 
-    return `<div class="set-card">
+    return `<div class="set-card" onclick="equipFullSet(${JSON.stringify(s.ankama_id)})">
       <div class="set-card-head">
         <div class="set-card-name" title="${s.name}">${s.name}</div>
-        <div class="set-card-lvl">Niv. ${lvl} &middot; ${items.length} pièces</div>
+        <div class="set-card-lvl">Niv.${lvl} &middot; ${itemCount} pièces</div>
       </div>
-      <div class="set-card-items">${imgs}</div>
-      ${bonusTxt?`<div class="set-card-bonus">✦ ${bonusTxt}</div>`:''}
-      <button class="set-card-btn" onclick="equipFullSet(${JSON.stringify(s.ankama_id)})">
-        Équiper ▸
-      </button>
+      <div class="set-card-bonuses">${allBonuses||'<span class="set-no-bonus">—</span>'}</div>
+      <div class="set-card-btn">Équiper ▸</div>
     </div>`
   }).join('')
 }
@@ -3108,5 +3087,5 @@ setTimeout(async()=>{const ok=await importFromHash();if(!ok) loadBuild()},350)
 </div>
 
 </body>
+<
 </html>
-                                                                                                                                                                                                                                                    
