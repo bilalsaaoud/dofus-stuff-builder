@@ -2662,16 +2662,13 @@ async function runAutoBuild() {
   progTxt.textContent = '✅ Build optimisé !'
 
   renderStats()
-  renderSetBonus()
-  updateKamasTotal()
   saveBuild()
 
-  setTimeout(() => {
-    closeAutoBuilder()
-    toast(`⚡ Build ${style} niveau ${lvl} prêt !`, 'ok')
-    // Confettis
-    if(window.launchConfettis) launchConfettis()
-  }, 800)
+  progBar.style.width = '100%'
+  await new Promise(r => setTimeout(r, 700))
+  closeAutoBuilder()
+  toast(`⚡ Build ${style} niveau ${lvl} prêt !`, 'ok')
+  if(window.launchConfettis) launchConfettis()
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2732,7 +2729,7 @@ function renderSetsGrid() {
 
   grid.innerHTML = filtered.map(s => {
     const items = s.items || []
-    const lvl = items[0]?.level || s.level || '?'
+    const lvl = s.level || '?'
     const bonus2 = s.effects?.find(e => e.item_count === 2)
     const bonusMax = s.effects?.[s.effects.length-1]
     const bonusTxt = bonus2
@@ -2766,7 +2763,7 @@ async function equipFullSet(setId) {
   try {
     const r = await fetch(`${API_SETS}/${setId}`)
     const setData = await r.json()
-    const items = setData.equipment || setData.items || []
+    const items = setData.equipment || setData.items || setData.data?.items || []
     if (!items.length) { toast('Aucun item trouvé', 'err'); return }
 
     // Équiper les items un par un avec animation
@@ -2794,7 +2791,7 @@ async function equipFullSet(setId) {
       } catch(e) { console.warn('Set item error', itemBasic.ankama_id) }
     }
 
-    renderStats(); renderSetBonus(); updateKamasTotal(); saveBuild()
+    renderStats(); saveBuild()
     toast(`✅ Panoplie équipée !`, 'ok')
     if (window.launchConfettis) launchConfettis()
   } catch(e) {
@@ -2856,7 +2853,14 @@ async function loadPanGrid() {
     if (!setsData.length) {
       const r = await fetch(`${API_SETS}/all?page_size=96&sort[level]=asc`)
       const data = await r.json()
-      setsData = (data.sets || data.data || []).filter(s=>s.items && s.items.length>=2)
+      const raw = data.items || data.sets || data.data || []
+      console.log('[Panoplies] clés API:', Object.keys(data), '| nb sets:', raw.length)
+      if (raw.length) console.log('[Panoplies] set[0]:', Object.keys(raw[0]))
+      setsData = raw.map(s => ({
+        ...s,
+        items: s.items || s.equipment || [],
+        level: s.level || s.highest_level || s.high_level || 0
+      })).filter(s => s.ankama_id)
     }
     renderPanGrid()
   } catch(e) {
@@ -2881,7 +2885,8 @@ function renderPanGrid() {
   const filtered = setsData.filter(s => {
     const lvl = s.items?.[0]?.level || s.level || 0
     const nm  = (s.name||'').toLowerCase()
-    return lvl <= panLevelFilter && (!panSearchTerm || nm.includes(panSearchTerm))
+    const lvlNum = parseInt(lvl) || 0
+    return (panLevelFilter >= 999 || lvlNum <= panLevelFilter) && (!panSearchTerm || nm.includes(panSearchTerm))
   })
 
   if (!filtered.length) {
@@ -2891,7 +2896,7 @@ function renderPanGrid() {
 
   grid.innerHTML = filtered.map(s => {
     const items = s.items || []
-    const lvl   = items[0]?.level || s.level || '?'
+    const lvl   = s.level || '?'
     const bonus2 = s.effects?.find(e=>e.item_count===2)
     const bonusTxt = bonus2
       ? (bonus2.effects||[]).slice(0,2).map(e=>e.formatted||e.type?.name||'').filter(Boolean).join(', ')
