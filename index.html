@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Dofus Stuff Builder</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
@@ -702,6 +703,117 @@ footer b{color:var(--gold-d)}
 .bscore-bar-wrap{flex:1;height:5px;background:rgba(0,0,0,.45);border-radius:3px;overflow:hidden}
 .bscore-bar{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1);box-shadow:0 0 5px currentColor}
 .bscore-pct{font-size:.52rem;color:var(--dim);width:26px;text-align:right;flex-shrink:0}
+
+
+/* ═══════════════════════════════════════════
+   MODE MOBILE  (≤ 700px)
+   ═══════════════════════════════════════════ */
+
+/* Tab bar — caché sur desktop */
+.mob-tabs{display:none}
+
+@media(max-width:700px){
+  /* Reset overflow body */
+  body{overflow:auto}
+  .app{height:100dvh;overflow:hidden}
+
+  /* Header compact */
+  header{padding:.4rem .6rem .35rem}
+  h1{font-size:1rem}
+  .sub{font-size:.55rem;letter-spacing:.1em}
+  .hd-line{width:30px}
+
+  /* Layout vertical */
+  .main{
+    flex-direction:column;
+    flex:1;overflow:hidden;
+    /* laisse de la place pour la tab bar */
+    padding-bottom:56px;
+  }
+
+  /* Panneaux pleine largeur */
+  .panel-build{
+    width:100%!important;flex-shrink:0;
+    overflow-y:auto;
+    display:none;
+  }
+  .panel-items{
+    flex:1;min-height:0;
+    display:none;
+  }
+
+  /* Tab active */
+  .main[data-tab="build"]  .panel-build{display:flex}
+  .main[data-tab="items"]  .panel-items{display:flex}
+  .main[data-tab="stats"]  .panel-build{display:flex}
+
+  /* Sur tab stats, cacher paperdoll et montrer stats */
+  .main[data-tab="stats"]  .paperdoll-zone{display:none!important}
+  .main[data-tab="stats"]  .char-infobar{display:none!important}
+  .main[data-tab="stats"]  .dofus-row{display:none!important}
+  .main[data-tab="stats"]  .stats-panel{flex:1;overflow-y:auto}
+
+  /* Sur tab build, cacher stats-panel */
+  .main[data-tab="build"]  .stats-panel{display:none!important}
+
+  /* Paperdoll compact */
+  .paperdoll-zone{
+    grid-template-columns:54px 1fr 54px;
+    gap:3px;padding:6px;
+  }
+  .sl{width:54px!important;height:54px!important}
+  .sl-ico img{width:32px!important;height:32px!important}
+  .sl-ph{font-size:1.1rem}
+  .sl-lbl{font-size:.38rem}
+  .char-scene{min-height:160px}
+
+  /* Dofus row compact */
+  .dofus-row{gap:3px;padding:4px 6px 5px}
+  .sd{height:48px}
+
+  /* Items grid 2 colonnes */
+  .items-grid{
+    grid-template-columns:repeat(2,1fr)!important;
+    gap:6px!important;
+    padding:6px!important;
+  }
+  .carte{border-radius:9px}
+  .c-img{height:72px}
+  .c-img img{width:54px!important;height:54px!important}
+
+  /* Search bar compact */
+  .srch-bar{padding:.5rem .6rem;gap:5px}
+  .filtres-bar{padding:4px 6px;gap:3px}
+  .cls-filter-wrap{padding:2px 4px;gap:3px}
+
+  /* Sort compact */
+  .sort-rng{display:none}
+
+  /* Tab bar mobile */
+  .mob-tabs{
+    display:flex;position:fixed;bottom:0;left:0;right:0;
+    height:56px;z-index:400;
+    background:linear-gradient(180deg,rgba(8,14,22,.97),rgba(5,9,15,1));
+    border-top:1px solid rgba(244,201,93,.12);
+    box-shadow:0 -4px 20px rgba(0,0,0,.5);
+  }
+  .mob-tab{
+    flex:1;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:2px;
+    background:transparent;border:none;cursor:pointer;
+    color:var(--dim);transition:color .2s;
+    padding:6px 0;
+  }
+  .mob-tab.active{color:var(--gold)}
+  .mob-tab.active .mob-tab-ico{
+    transform:scale(1.15);filter:drop-shadow(0 0 6px rgba(244,201,93,.5));
+  }
+  .mob-tab-ico{font-size:1.2rem;transition:transform .2s,filter .2s}
+  .mob-tab-lbl{font-size:.52rem;text-transform:uppercase;letter-spacing:.08em;font-family:'Cinzel',serif}
+
+  /* Masquer éléments desktop inutiles sur mobile */
+  #bg-canvas{display:none}
+}
 
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -1446,6 +1558,7 @@ function selectClass(cls) {
   document.body.style.setProperty('--cls2',cls.c2)
   // ── Thème global ──────────────────────────────────────────────
   applyClassTheme(cls.color, r1, g1, b1, r2, g2, b2)
+  window._currentCls = cls
   loadCharFace(cls); saveBuild()
 }
 
@@ -2155,10 +2268,55 @@ function playUnequipSound() {
   } catch(e){}
 }
 
+
+// ══════════════════════════════
+// NAVIGATION MOBILE TABS
+// ══════════════════════════════
+function setMobTab(tab) {
+  document.querySelector('.main').dataset.tab = tab
+  document.querySelectorAll('.mob-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab)
+  })
+  // Mettre à jour la couleur active selon classe
+  const cls = window._currentCls
+  if (cls) {
+    document.querySelectorAll('.mob-tab.active').forEach(b => {
+      b.style.color = cls.color
+    })
+    document.querySelectorAll('.mob-tab:not(.active)').forEach(b => {
+      b.style.color = ''
+    })
+  }
+}
+
+// Init tab par défaut
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.innerWidth <= 700) {
+    document.querySelector('.main').dataset.tab = 'build'
+  }
+})
+
 renderFiltres(); fetchItems(1,false); initDragDrop()
 setTimeout(async()=>{const ok=await importFromHash();if(!ok) loadBuild()},350)
 </script>
-<div class="sl-tip" id="sl-tip"><div class="sl-tip-box" id="sl-tip-box"></div></div>
+<!-- ═══ BARRE D'ONGLETS MOBILE ═══ -->
+<nav class="mob-tabs" id="mob-tabs">
+  <button class="mob-tab active" data-tab="build" onclick="setMobTab('build')">
+    <span class="mob-tab-ico">🎭</span>
+    <span class="mob-tab-lbl">Build</span>
+  </button>
+  <button class="mob-tab" data-tab="items" onclick="setMobTab('items')">
+    <span class="mob-tab-ico">🔍</span>
+    <span class="mob-tab-lbl">Items</span>
+  </button>
+  <button class="mob-tab" data-tab="stats" onclick="setMobTab('stats')">
+    <span class="mob-tab-ico">📊</span>
+    <span class="mob-tab-lbl">Stats</span>
+  </button>
+</nav>
+
+<div class="sl-tip"
+ id="sl-tip"><div class="sl-tip-box" id="sl-tip-box"></div></div>
 
 <script>
 // ═══════════════════════════════════
